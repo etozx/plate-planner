@@ -270,14 +270,14 @@
     .float.a { left: 10px; } .float.b { right: 10px; }
     .grid3 { grid-template-columns: 1fr; }
     .stats { grid-template-columns: repeat(2, 1fr); }
-    nav a .lbl { display: none; }
+    nav a .lbl { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); } /* icon-only, still read aloud */
   }
   @media (max-width: 760px) {
     body { padding-bottom: 82px; }
     nav { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; background: #fff; border-top: 1px solid var(--line);
       display: grid; grid-template-columns: repeat(5, 1fr); padding: 6px 2px calc(6px + env(safe-area-inset-bottom)); }
     nav a { flex-direction: column; gap: 2px; padding: 6px 0; font-size: .72rem; }
-    nav a .lbl { display: block; }
+    nav a .lbl { position: static; width: auto; height: auto; clip: auto; }
     nav a .ic { width: 22px; height: 22px; }
     #toast { bottom: 94px; }
     h1 { font-size: 1.7rem; }
