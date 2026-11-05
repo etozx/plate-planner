@@ -2,6 +2,7 @@
 
 Plan a month of healthy meals, built to be easy to use for everyone. Live at https://etozx.github.io/plate-planner/
 
+- 75 meals with real photos: soul food, Caribbean, West African and East African dishes, plus everyday favourites
 - Dashboard, month calendar, one-day-at-a-time planner and a shopping list
 - "Fill my month" picks meals around your calories, protein, sugar, budget, diet and allergies
 - Favourites, your own meals, household size, bigger text, undo and backup/restore
