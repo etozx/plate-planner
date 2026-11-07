@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Plate Planner: before and after</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,650&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root { --ink:#1c2b22; --muted:#56655b; --line:#e2e8e3; --soft:#f4f8f4; --green:#2f6b3f; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #fff; color: var(--ink); font: 16px/1.5 "Source Sans 3", system-ui, sans-serif; }
+  h1, h2 { font-family: Fraunces, Georgia, serif; margin: 0; }
+  .wrap { max-width: 1500px; margin: 0 auto; padding: 24px 16px 64px; }
+  .bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 16px 0; padding: 12px; background: var(--soft); border-radius: 12px; }
+  .bar b { margin-right: 4px; }
+  button { font: inherit; font-weight: 600; min-height: 40px; padding: 0 14px; border-radius: 9px; border: 1.5px solid var(--line); background: #fff; cursor: pointer; }
+  button.primary { background: var(--green); color: #fff; border-color: var(--green); }
+  label { display: flex; gap: 6px; align-items: center; font-weight: 600; }
+  .frames { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .frames figure { margin: 0; }
+  .frames figcaption { font-weight: 700; margin-bottom: 6px; display: flex; justify-content: space-between; }
+  .frames figcaption span { color: var(--muted); font-weight: 400; }
+  iframe { width: 100%; height: 760px; border: 1px solid var(--line); border-radius: 12px; background: #fff; }
+  .change { border-top: 1px solid var(--line); padding: 28px 0 8px; }
+  .change p { color: var(--muted); margin: 6px 0 14px; max-width: 70em; }
+  .code { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .code h3 { margin: 0 0 6px; font-size: .9rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+  pre { margin: 0; padding: 14px; background: #f7f9f7; border: 1px solid var(--line); border-radius: 10px; overflow-x: auto; font: 12.5px/1.5 ui-monospace, Consolas, monospace; white-space: pre; }
+  .after pre { background: #f1f8f2; border-color: #c9dccb; }
+  @media (max-width: 900px) { .frames, .code { grid-template-columns: 1fr; } iframe { height: 640px; } }
+</style></head>
+<body><div class="wrap">
+  <h1>Plate Planner: before and after</h1>
+  <p style="color:var(--muted)">Left: the version that is live now (commit 2bfc2ec). Right: the new code. Both are the real site files and run live, so every button works. They share the plans saved in this browser with the real planner, so the Data buttons ask before changing anything. <a href="../">Back to Plate Planner</a></p>
+  <div class="bar">
+    <b>Show</b>
+    <button data-go="#home">Landing</button><button data-go="#dash">Dashboard</button><button data-go="#month">Month</button>
+    <button data-go="#day">A day</button><button data-go="#shop">Shopping</button>
+    <button id="picker">Open meal picker</button><button id="nomatch">Search with no results</button><button id="closepk">Close picker</button>
+  </div>
+  <div class="bar">
+    <b>Data</b>
+    <button id="empty">Empty (see empty states)</button><button id="demo" class="primary">Fill a demo month</button>
+    <button id="reload">Reload both (see loading)</button>
+    <label><input type="checkbox" id="slow"> Slow motion on the right (4x slower)</label>
+  </div>
+  <div class="frames">
+    <figure><figcaption>Before <span>live now</span></figcaption><iframe id="before" src="before.html#dash" title="Before"></iframe></figure>
+    <figure><figcaption>After <span>new version</span></figcaption><iframe id="after" src="../index.html#dash" title="After"></iframe></figure>
+  </div>
+  <h2 style="margin-top:36px">What changed in the code</h2>
+  <section class="change"><h2 style="font-size:1.25rem">Button presses</h2><p>Buttons only changed colour. Now they lift on hover, squash to 94% when pressed and spring back with a slight overshoot.</p>
+    <div class="code"><div><h3>Before</h3><pre>.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 50px; padding: 0 20px;
+.btn:hover { background: var(--soft); border-color: var(--green); }</pre></div><div class="after"><h3>After</h3><pre>  .btn, .chip-btn, .opt, nav a, .choice .pick, .tile, .today-meals a {
+    transition: transform .42s var(--spring), background .15s, border-color .15s, box-shadow .2s, color .15s; }
+  .btn:hover, .chip-btn:hover { transform: translateY(-1px); }
+  .btn.primary:hover { box-shadow: 0 6px 16px rgb(47 107 63 / .28); }
+  .btn:active, .chip-btn:active, .opt:active, nav a:active, .choice .pick:active, .today-meals a:active { transform: scale(.94); transition-duration: .08s; }
+  .tile:hover { transform: translateY(-2px); }
+  .tile:active { transform: scale(.97); transition-duration: .08s; }</pre></div></div></section><section class="change"><h2 style="font-size:1.25rem">Modals and pop-ups</h2><p>The meal picker appeared with a fade and vanished instantly. Now it grows in and shrinks out, with the backdrop fading. The toast message does the same.</p>
+    <div class="code"><div><h3>Before</h3><pre>dialog[open] { animation: viewIn .2s ease-out; }
+$('#chooser-close').onclick = () => $('#chooser').close();</pre></div><div class="after"><h3>After</h3><pre>  dialog[open] { animation: grow-in .3s var(--ease-out); }
+  dialog[open]::backdrop { animation: fade-in .3s ease-out; }
+  dialog.closing { animation: shrink-out .2s ease-in forwards; }
+  dialog.closing::backdrop { animation: fade-out .2s ease-in forwards; }
+  #toast { animation: grow-in .32s var(--spring); }
+  #toast.leaving { animation: shrink-out .2s ease-in forwards; }
+  details.table[open] > div { animation: unfold .3s var(--ease-out); transform-origin: top; }
+
+function closeChooser() {
+  const d = $('#chooser');
+  if (d.open &amp;&amp; !d.classList.contains('closing')) animateOut(d, 'closing', () => d.close());
+}</pre></div></div></section><section class="change"><h2 style="font-size:1.25rem">Page changes</h2><p>The whole page faded up as one block. Now the old page cross-fades out and the new page's cards arrive one after another, 45 ms apart.</p>
+    <div class="code"><div><h3>Before</h3><pre>.view { padding: 32px 0 64px; animation: viewIn .25s ease-out; }
+window.addEventListener('hashchange', route);</pre></div><div class="after"><h3>After</h3><pre>// staggered entrance; 'backwards' fill means nothing lingers after it finishes
+const CASCADE = '.page-head, .welcome, .summary, .stats > *, .dash > div > *, .calendar > .tile, .meals > *, .side > *, .shop-group, .shop-list > li, #shop-total, form.settings > *, .settings > section, .hero > *, .section, .band, .credits tbody tr, #choices > *';
+function cascadeIn(els) {
+  if (reduced()) return;
+  els.forEach((el, i) => { el.classList.remove('cascade'); el.style.setProperty('--i', Math.min(i, 14)); void el.offsetWidth; el.classList.add('cascade'); });
+}
+// ---------- searchable dropdown: enhances a native &lt;select>, which stays the source of truth ----------
+function closeDropdowns(except) { $$('select').forEach(s => { if (s._dd &amp;&amp; s._dd.wrap !== except) s._dd.close(); }); }
+document.addEventListener('pointerdown', e => { if (!e.target.closest('.dd')) closeDropdowns(); });
+function enhanceSelect(sel) {
+  if (sel._dd) return sel._dd.refresh();
+  const multi = sel.multiple, id = sel.id + '-dd', wrap = document.createElement('div');
+  wrap.className = 'dd' + (multi ? ' multi' : '');
+  wrap.innerHTML = `&lt;button type="button" class="dd-btn" id="${id}" aria-haspopup="listbox" aria-expanded="false">&lt;span class="dd-val">&lt;/span>${ic('chevron-down', 'dd-chev')}&lt;/button>
+    &lt;div class="dd-panel" hidden>&lt;div class="search-box">${ic('search')}&lt;input class="dd-search" type="search" placeholder="Search…" autocomplete="off"
+      role="combobox" aria-expanded="true" aria-controls="${id}-list">&lt;/div>
+    &lt;div class="dd-count muted" aria-live="polite">&lt;/div>&lt;div class="dd-list" id="${id}-list" role="listbox"${multi ? ' aria-multiselectable="true"' : ''}>&lt;/div>
+    ${multi ? '&lt;div class="dd-foot">&lt;button type="button" class="btn quiet dd-clear">Clear&lt;/button>&lt;button type="button" class="btn primary dd-done">Done&lt;/button>&lt;/div>' : ''}&lt;/div>`;
+  sel.after(wrap);
+  sel.hidden = true;
+  const btn = wrap.querySelector('.dd-btn'), panel = wrap.querySelector('.dd-panel'), search = wrap.querySelector('.dd-search'), list = wrap.querySelector('.dd-list');
+  const label = sel.labels?.[0];
+  if (label) label.htmlFor = id;
+  const name = (label?.textContent || sel.getAttribute('aria-label') || sel.dataset.label || '').trim();
+  btn.setAttribute('aria-label', name);
+  search.setAttribute('aria-label', 'Search ' + name.toLowerCase());
+  let active = 0;
+  const shown = () => { const q = search.value.trim().toLowerCase(); return [...sel.options].filter(o => o.text.toLowerCase().includes(q)); };
+  function refresh() {
+    const picked = [...sel.selectedOptions];
+    const text = multi ? (picked.length ? picked.map(o => o.text).join(', ') : sel.dataset.placeholder || 'Any') : picked[0]?.text || '';
+    wrap.querySelector('.dd-val').innerHTML = (sel.dataset.label ? `&lt;small>${esc(sel.dataset.label)}&lt;/small>` : '') + esc(text);
+    btn.classList.toggle('has-value', multi &amp;&amp; picked.length > 0);
+    btn.title = text;
+  }
+  function draw() {
+    const s = shown();
+    active = Math.max(0, Math.min(active, s.length - 1));
+    wrap.querySelector('.dd-count').textContent = `${s.length} of ${sel.options.length}${multi ? ` · ${sel.selectedOptions.length} chosen` : ''}`;
+    list.innerHTML = s.length ? s.map((o, i) => `&lt;div role="option" id="${id}-o${o.index}" data-i="${o.index}" aria-selected="${o.selected}" class="dd-opt${i === active ? ' active' : ''}">${multi ? '&lt;span class="dd-box">&lt;/span>' : ''}&lt;span>${esc(o.text)}&lt;/span>&lt;/div>`).join('')
+      : `&lt;div class="dd-empty">No options match "${esc(search.value.trim())}"&lt;/div>`;
+    search.setAttribute('aria-activedescendant', s[active] ? `${id}-o${s[active].index}` : '');
+  }
+  function open() {
+    if (!panel.hidden &amp;&amp; !panel.classList.contains('leaving')) return;
+    closeDropdowns(wrap);
+    panel.classList.remove('leaving');
+    search.value = '';
+    active = Math.max(0, shown().findIndex(o => o.selected));
+    draw();
+    panel.hidden = false;
+    panel.style.left = panel.style.right = '';
+    if (panel.getBoundingClientRect().right > innerWidth - 8) { panel.style.left = 'auto'; panel.style.right = '0'; } // keep on screen
+    btn.setAttribute('aria-expanded', 'true');
+    search.focus();
+  }
+  function close(focusBtn) {
+    if (panel.hidden || panel.classList.contains('leaving')) return;
+    btn.setAttribute('aria-expanded', 'false');
+    animateOut(panel, 'leaving', () => { panel.hidden = true; });
+    if (focusBtn) btn.focus();
+  }
+  function choose(o) {
+    if (multi) o.selected = !o.selected; else sel.value = o.value;
+    sel.dispatchEvent(new Event('change', { bubbles: true }));
+    refresh();
+    if (multi) draw(); else close(true);
+  }
+  btn.onclick = () => (panel.hidden ? open() : close());
+  btn.onkeydown = e => { if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); open(); } };
+  search.oninput = () => { active = 0; draw(); };
+  search.onkeydown = e => {
+    const s = shown();
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      active = (active + (e.key === 'ArrowDown' ? 1 : -1) + s.length) % Math.max(1, s.length);
+      draw();
+      list.querySelector('.active')?.scrollIntoView({ block: 'nearest' });
+    } else if (e.key === 'Enter') { e.preventDefault(); if (s[active]) choose(s[active]); }
+    else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); close(true); } // close the list, not the meal picker
+    else if (e.key === 'Tab') close();
+  };
+  list.onclick = e => {
+    const el = e.target.closest('[data-i]');
+    if (!el) return;
+    active = shown().findIndex(o => o.index === +el.dataset.i);
+    choose(sel.options[+el.dataset.i]);
+  };
+  wrap.querySelector('.dd-clear')?.addEventListener('click', () => { [...sel.options].forEach(o => { o.selected = false; }); sel.dispatchEvent(new Event('change', { bubbles: true })); refresh(); draw(); });
+  wrap.querySelector('.dd-done')?.addEventListener('click', () => close(true));
+  sel._dd = { refresh, close, wrap };
+  refresh();
+  icons();
+}
+window.addEventListener('hashchange', () => {
+  if (!document.startViewTransition || reduced()) return route();
+  document.startViewTransition(route).ready.catch(() => {}); // a skipped transition (e.g. rapid clicks) still runs route
+});</pre></div></div></section><section class="change"><h2 style="font-size:1.25rem">Loading</h2><p>There was no loading state: icons popped in late and photos appeared from blank boxes. Now a skeleton shows until the icons and fonts arrive, and every photo shimmers until it has loaded.</p>
+    <div class="code"><div><h3>Before</h3><pre>/* no loading state */</pre></div><div class="after"><h3>After</h3><pre>  .sk, img:not(.loaded) { background: linear-gradient(100deg, var(--soft) 30%, #fff 50%, var(--soft) 70%) 0 0 / 250% 100%; animation: shimmer 1.3s linear infinite; }
+  img.loaded { animation: fade-in .35s ease-out; }
+  @keyframes shimmer { from { background-position: 100% 0; } to { background-position: 0 0; } }
+
+async function boot() {
+  const lucideReady = new Promise(r => window.lucide ? r() : window.addEventListener('load', r, { once: true }));
+  await Promise.race([Promise.all([document.fonts.ready, lucideReady]), new Promise(r => setTimeout(r, 2500))]);
+  document.body.classList.remove('booting');
+  $('main').removeAttribute('aria-busy');
+  render();
+  cascadeIn($$(`#${view} :is(${CASCADE})`));
+  $(`#${view} h1`)?.focus({ preventScroll: true });
+}</pre></div></div></section><section class="change"><h2 style="font-size:1.25rem">Meal picker filters</h2><p>Two rows of 15 pills, each allowing only one choice. Now there are three searchable dropdowns: Filters and Cuisine let you tick several options, and Sort picks one. Every other dropdown on the site uses the same component.</p>
+    <div class="code"><div><h3>Before</h3><pre>const FILTERS = [['all', 'All'], ['fav', 'Favourites'], ['protein', 'High protein'], ['sugar', 'Low sugar'], ['light', 'Light'], ['budget', 'Budget'], ['mine', 'My meals']];
+$('#filters').innerHTML = FILTERS.map(([id, l]) => `&lt;button type="button" class="chip-btn" data-filter="${id}">${l}&lt;/button>`).join('')
++ '&lt;span style="flex-basis:100%">&lt;/span>' + [['all', 'All cuisines'], ...CUISINES].map(([c, l]) => `&lt;button type="button" class="chip-btn" data-cuisine="${c}">${l}&lt;/button>`).join('')</pre></div><div class="after"><h3>After</h3><pre>  $('#filters').innerHTML = `&lt;select id="f-tags" multiple aria-label="Filters" data-label="Filters" data-placeholder="All meals">${FILTERS.map(([v, l]) => `&lt;option value="${v}">${l}&lt;/option>`).join('')}&lt;/select>
+    &lt;select id="f-cuisine" multiple aria-label="Cuisine" data-label="Cuisine" data-placeholder="All cuisines">${CUISINES.map(([v, l]) => `&lt;option value="${v}">${l}&lt;/option>`).join('')}&lt;/select>`
+    + `&lt;select id="sort" aria-label="Sort meals" data-label="Sort">&lt;option value="fav">Favourites and loved cuisines first&lt;/option>&lt;option value="name">Name A–Z&lt;/option>&lt;option value="kcal">Fewest calories&lt;/option>&lt;option value="protein">Most protein&lt;/option>&lt;option value="cost">Cheapest&lt;/option>&lt;/select>`;
+
+function enhanceSelect(sel) {
+  if (sel._dd) return sel._dd.refresh();
+  const multi = sel.multiple, id = sel.id + '-dd', wrap = document.createElement('div');
+  wrap.className = 'dd' + (multi ? ' multi' : '');
+  wrap.innerHTML = `&lt;button type="button" class="dd-btn" id="${id}" aria-haspopup="listbox" aria-expanded="false">&lt;span class="dd-val">&lt;/span>${ic('chevron-down', 'dd-chev')}&lt;/button>
+    &lt;div class="dd-panel" hidden>&lt;div class="search-box">${ic('search')}&lt;input class="dd-search" type="search" placeholder="Search…" autocomplete="off"
+      role="combobox" aria-expanded="true" aria-controls="${id}-list">&lt;/div>
+    &lt;div class="dd-count muted" aria-live="polite">&lt;/div>&lt;div class="dd-list" id="${id}-list" role="listbox"${multi ? ' aria-multiselectable="true"' : ''}>&lt;/div>
+    ${multi ? '&lt;div class="dd-foot">&lt;button type="button" class="btn quiet dd-clear">Clear&lt;/button>&lt;button type="button" class="btn primary dd-done">Done&lt;/button>&lt;/div>' : ''}&lt;/div>`;
+  sel.after(wrap);
+  sel.hidden = true;  …</pre></div></div></section><section class="change"><h2 style="font-size:1.25rem">Empty states</h2><p>Empty areas showed one grey sentence. Now each one has an icon, a clear title, a short explanation and, where it helps, a button to fix it.</p>
+    <div class="code"><div><h3>Before</h3><pre>}).join('') : `&lt;p class="card">Nothing to buy yet. &lt;a href="#month">Plan some meals&lt;/a> and your list will appear here.&lt;/p>`;
+}).join('') : `&lt;p class="muted">No meals match. Try another word or press "All".&lt;/p>`;</pre></div><div class="after"><h3>After</h3><pre>const emptyState = (icon, title, body, action = '', sm = false) =>
+  `&lt;div class="empty-state${sm ? ' sm' : ''}">&lt;span class="es-ic">${ic(icon)}&lt;/span>&lt;h3>${title}&lt;/h3>&lt;p>${body}&lt;/p>${action}&lt;/div>`;
+
+}).join('') : emptyState('shopping-basket', 'Your list is empty', 'Plan some meals and everything you need for them appears here, ready to tick off.', `&lt;a class="btn primary" href="#month">${ic('calendar-days')}Plan my meals&lt;/a>`);</pre></div></div></section>
+</div>
+<script>
+  const frames = () => [document.getElementById('before'), document.getElementById('after')];
+  const wait = ms => new Promise(r => setTimeout(r, ms));
+  const today = new Date(), iso = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  const go = h => frames().forEach(f => { f.contentWindow.location.hash = h === '#day' ? '#day/' + iso(today) : h; });
+  const both = fn => frames().forEach(f => { try { fn(f.contentWindow, f.contentDocument); } catch (e) { console.warn(e); } });
+  document.querySelectorAll('[data-go]').forEach(b => b.onclick = () => go(b.dataset.go));
+  document.getElementById('picker').onclick = async () => { go('#day'); await wait(500); both((w, d) => d.querySelector('[data-choose="l"]')?.click()); };
+  document.getElementById('nomatch').onclick = async () => {
+    if (!frames()[1].contentDocument.querySelector('#chooser').open) { document.getElementById('picker').click(); await wait(800); }
+    both((w, d) => { const s = d.querySelector('#search'); s.value = 'zzz'; s.dispatchEvent(new Event('input')); });
+  };
+  document.getElementById('closepk').onclick = () => both((w, d) => d.querySelector('#chooser-close')?.click());
+  document.getElementById('empty').onclick = () => {
+    if (!confirm('This deletes the Plate Planner plans saved in this browser, so you can see the empty screens. Continue?')) return;
+    const w = frames()[1].contentWindow;
+    Object.keys(w.localStorage).filter(k => k.startsWith('plate-')).forEach(k => w.localStorage.removeItem(k));
+    w.localStorage.setItem('plate-goals', '{}');
+    both(w => { w.location.hash = '#dash'; w.location.reload(); });
+  };
+  document.getElementById('demo').onclick = async () => {
+    if (!confirm('This fills every empty day this month in the Plate Planner plan saved in this browser. Meals you already chose are kept. Continue?')) return;
+    const a = frames()[1].contentWindow;
+    if (!a.localStorage.getItem('plate-goals')) a.localStorage.setItem('plate-goals', '{}');
+    a.location.hash = '#month'; await wait(600);
+    a.document.querySelector('#fill-month')?.click(); await wait(400);
+    both(w => { w.location.hash = '#dash'; w.location.reload(); });
+  };
+  document.getElementById('reload').onclick = () => both(w => w.location.reload());
+  let slowTimer;
+  document.getElementById('slow').onchange = e => {
+    clearInterval(slowTimer);
+    if (e.target.checked) slowTimer = setInterval(() => { try { frames()[1].contentDocument.getAnimations().forEach(x => { x.playbackRate = .25; }); } catch {} }, 30);
+  };
+</script>
+</body></html>

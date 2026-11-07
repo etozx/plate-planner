@@ -1,0 +1,1364 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Plate Planner</title>
+<meta name="description" content="Plan a month of healthy meals the easy way: real food photos, large buttons, a dashboard and a ready-made shopping list.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js" defer></script>
+<style>
+  :root {
+    --bg: #ffffff; --ink: #1c2b22; --muted: #56655b; --line: #e2e8e3; --soft: #f4f8f4;
+    --green: #2f6b3f; --green-dark: #224f2e; --sage: #e5efe6; --sage-line: #c9dccb;
+    --warn: #a8500c; --warn-soft: #fdf2e7; --radius: 14px;
+    --serif: "Fraunces", Georgia, serif; --sans: "Source Sans 3", system-ui, sans-serif;
+  }
+  html { font-size: 18px; }
+  html.big { font-size: 21px; }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 1rem/1.55 var(--sans); }
+  button, input, select, textarea { font: inherit; color: inherit; }
+  a { color: var(--green-dark); }
+  :focus-visible { outline: 3px solid var(--green); outline-offset: 3px; }
+  h1, h2, h3 { font-family: var(--serif); font-weight: 650; line-height: 1.15; margin: 0; letter-spacing: -.01em; }
+  h1 { font-size: 2.1rem; }
+  h2 { font-size: 1.45rem; }
+  h3 { font-size: 1.15rem; }
+  h1:focus { outline: none; }
+  p { margin: 0; }
+  .muted { color: var(--muted); }
+  .warn-text { color: var(--warn); font-weight: 600; }
+  .wrap { max-width: 1160px; margin: 0 auto; padding: 0 16px; }
+  .ic { width: 1.15em; height: 1.15em; flex: none; stroke-width: 2; vertical-align: -.2em; }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 50px; padding: 0 20px;
+    border-radius: 10px; border: 1.5px solid var(--sage-line); background: #fff; color: var(--green-dark);
+    font-weight: 600; text-decoration: none; cursor: pointer; transition: background .15s, border-color .15s; }
+  .btn:hover { background: var(--soft); border-color: var(--green); }
+  .btn.primary { background: var(--green); border-color: var(--green); color: #fff; }
+  .btn.primary:hover { background: var(--green-dark); }
+  .btn.quiet { border-color: var(--line); color: var(--ink); }
+  .btn.big { min-height: 60px; font-size: 1.1rem; padding: 0 26px; }
+  .btn.icon { width: 50px; padding: 0; }
+  .btn-row { display: flex; flex-wrap: wrap; gap: 10px; }
+
+  header { position: sticky; top: 0; z-index: 10; background: #fff; border-bottom: 1px solid var(--line); }
+  header .wrap { display: flex; align-items: center; gap: 12px; min-height: 70px; }
+  .brand { display: flex; align-items: center; gap: 10px; font: 700 1.3rem var(--serif); color: var(--ink); text-decoration: none; margin-right: auto; }
+  .brand .mark { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 10px; background: var(--green); color: #fff; }
+  nav { display: flex; gap: 2px; }
+  nav a { display: flex; align-items: center; gap: 7px; padding: 9px 12px; border-radius: 9px; color: var(--muted); text-decoration: none; font-weight: 600; }
+  nav a:hover { color: var(--ink); background: var(--soft); }
+  nav a[aria-current] { color: var(--green-dark); background: var(--sage); }
+  #text-size { min-height: 42px; padding: 0 12px; font-size: .9rem; }
+
+  .view { padding: 32px 0 64px; animation: viewIn .25s ease-out; }
+  @keyframes viewIn { from { opacity: 0; transform: translateY(6px); } }
+  .page-head { display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-end; justify-content: space-between; margin-bottom: 22px; }
+  .eyebrow { font-weight: 700; color: var(--green); text-transform: uppercase; letter-spacing: .08em; font-size: .78rem; margin-bottom: 6px; }
+  .card { border: 1px solid var(--line); border-radius: var(--radius); padding: 22px; background: #fff; }
+  .card h2 { font-size: 1.2rem; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+
+  /* Landing */
+  .hero { display: grid; grid-template-columns: 1fr 1.05fr; gap: 48px; align-items: center; padding: 20px 0 56px; }
+  .hero h1 { font-size: 3rem; }
+  .lead { font-size: 1.2rem; color: var(--muted); margin: 18px 0 28px; max-width: 34em; }
+  .trust { display: flex; flex-wrap: wrap; gap: 18px; margin-top: 26px; color: var(--muted); font-weight: 600; font-size: .95rem; }
+  .trust span { display: flex; align-items: center; gap: 6px; }
+  .trust .ic { color: var(--green); }
+  .hero-art { position: relative; }
+  .hero-art > img { width: 100%; aspect-ratio: 4 / 3.4; object-fit: cover; border-radius: 22px; display: block; }
+  .float { position: absolute; display: flex; gap: 12px; align-items: center; background: #fff; border-radius: 14px; padding: 10px 16px 10px 10px;
+    box-shadow: 0 10px 30px rgb(20 40 25 / .16); font-size: .9rem; }
+  .float img { width: 58px; height: 58px; border-radius: 10px; object-fit: cover; }
+  .float b { display: block; font-size: 1rem; }
+  .float.a { left: -24px; bottom: 34px; }
+  .float.b { right: -14px; top: 26px; }
+  .section { padding: 56px 0 8px; }
+  .section > p { color: var(--muted); font-size: 1.1rem; margin-top: 8px; }
+  .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 26px; }
+  .feat { border: 1px solid var(--line); border-radius: var(--radius); padding: 24px; }
+  .feat .badge-ic { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 12px; background: var(--sage); color: var(--green-dark); margin-bottom: 14px; }
+  .feat .badge-ic .ic { width: 24px; height: 24px; }
+  .feat h3 { margin-bottom: 6px; }
+  .feat p { color: var(--muted); }
+  .step-n { font: 700 2.4rem var(--serif); color: var(--sage-line); line-height: 1; margin-bottom: 8px; }
+  .sample { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 24px; }
+  .sample figure { margin: 0; }
+  .sample img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 14px; display: block; }
+  .sample figcaption { margin-top: 8px; font-weight: 600; }
+  .sample figcaption small { display: block; color: var(--muted); font-weight: 400; }
+  .band { background: var(--green); color: #fff; border-radius: 22px; padding: 44px 32px; margin-top: 56px; text-align: center; }
+  .band h2 { color: #fff; font-size: 1.8rem; }
+  .band p { margin: 10px 0 22px; opacity: .9; font-size: 1.1rem; }
+  .band .btn { background: #fff; color: var(--green-dark); border-color: #fff; }
+
+  /* Dashboard */
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 18px; }
+  .stat { border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; }
+  .stat .label { display: flex; align-items: center; gap: 7px; color: var(--muted); font-weight: 600; font-size: .9rem; }
+  .stat .label .ic { color: var(--green); }
+  .stat .big { font: 700 2rem var(--serif); margin: 6px 0 2px; font-variant-numeric: tabular-nums; }
+  .stat .big small { font: 400 1rem var(--sans); color: var(--muted); }
+  .bar { height: 8px; border-radius: 99px; background: var(--soft); overflow: hidden; margin-top: 10px; }
+  .bar i { display: block; height: 100%; border-radius: 99px; background: var(--green); }
+  .bar i.over { background: var(--warn); }
+  .dash { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+  .dash > div { display: grid; gap: 18px; }
+  .today-meals { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .today-meals a { text-decoration: none; color: var(--ink); }
+  .today-meals .ph { width: 100%; aspect-ratio: 1; border-radius: 12px; object-fit: cover; display: grid; place-items: center; background: var(--soft); color: var(--muted); }
+  .today-meals small { display: block; color: var(--green); font-weight: 700; font-size: .75rem; text-transform: uppercase; letter-spacing: .06em; margin-top: 8px; }
+  .today-meals span { font-weight: 600; line-height: 1.3; display: block; }
+  .chart { position: relative; height: 200px; margin-top: 4px; }
+  .chart svg { position: absolute; inset: 0 0 26px 0; width: 100%; height: calc(100% - 26px); overflow: visible; }
+  .chart .xl { position: absolute; bottom: 0; transform: translateX(-50%); font-size: .8rem; color: var(--muted); }
+  .chart .gl { position: absolute; right: 0; transform: translateY(-120%); font-size: .8rem; font-weight: 700; color: var(--muted); background: #fff; padding: 0 4px; }
+  .chart a rect.hit { fill: transparent; }
+  .chart a:hover path, .chart a:focus path { fill: var(--green-dark); }
+  .chart a:focus { outline: none; }
+  .tip { position: absolute; z-index: 2; pointer-events: none; background: var(--ink); color: #fff; padding: 8px 12px; border-radius: 8px; font-size: .85rem; white-space: nowrap; transform: translate(-50%, -100%); }
+  .tip b { display: block; }
+  .hbars { display: grid; gap: 12px; }
+  .hbars .row { display: grid; grid-template-columns: 5.5em 1fr 5em; gap: 10px; align-items: center; }
+  .hbars .track { height: 18px; background: var(--soft); border-radius: 4px; overflow: hidden; }
+  .hbars .fill { height: 100%; background: var(--green); border-radius: 0 4px 4px 0; }
+  .hbars .val { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+  .list { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+  .list li a, .list li { display: flex; align-items: center; gap: 12px; text-decoration: none; color: var(--ink); }
+  .list img, .list .noimg { width: 46px; height: 46px; border-radius: 10px; object-fit: cover; flex: none; }
+  .list .grow { flex: 1; min-width: 0; }
+  .list small { display: block; color: var(--muted); }
+  .count { font-weight: 700; font-variant-numeric: tabular-nums; }
+  .pill { display: inline-flex; align-items: center; gap: 4px; font-size: .8rem; font-weight: 700; padding: 2px 9px; border-radius: 99px; background: var(--warn-soft); color: var(--warn); }
+  details.table { margin-top: 12px; }
+  details.table summary { cursor: pointer; color: var(--green-dark); font-weight: 600; }
+  details.table table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: .9rem; font-variant-numeric: tabular-nums; }
+  details.table th, details.table td { text-align: left; padding: 4px 8px; border-bottom: 1px solid var(--line); }
+  .nut { display: grid; gap: 14px; }
+  .nut .top { display: flex; justify-content: space-between; font-weight: 600; }
+
+  /* Month */
+  .month-nav { display: flex; align-items: center; gap: 10px; }
+  .month-nav h1 { min-width: 9.5em; text-align: center; font-size: 1.9rem; }
+  .summary { display: flex; flex-wrap: wrap; gap: 8px 24px; background: var(--soft); border-radius: var(--radius); padding: 14px 18px; margin-bottom: 14px; }
+  .summary span { display: flex; align-items: center; gap: 7px; }
+  .summary .ic { color: var(--green); }
+  .calendar { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; }
+  .wd { text-align: center; font-weight: 700; color: var(--muted); font-size: .85rem; text-transform: uppercase; letter-spacing: .06em; padding: 4px 0; }
+  .tile { display: flex; flex-direction: column; gap: 6px; min-height: 128px; padding: 10px; border: 1px solid var(--line); border-radius: 12px;
+    color: var(--ink); text-decoration: none; background: #fff; transition: border-color .15s, box-shadow .15s; }
+  .tile:hover { border-color: var(--green); box-shadow: 0 4px 14px rgb(20 40 25 / .08); }
+  .tile.today { border: 2px solid var(--green); }
+  .tile .top { display: flex; justify-content: space-between; align-items: center; }
+  .tile .num { font: 700 1.25rem var(--serif); }
+  .tile .wdname { display: none; }
+  .tile .ok { color: var(--green); }
+  .thumbs { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; }
+  .thumbs img, .thumbs i { width: 100%; aspect-ratio: 1.4; border-radius: 6px; object-fit: cover; display: block; }
+  .thumbs i { background: var(--soft); border: 1px dashed var(--line); }
+  .tile .status { font-size: .8rem; color: var(--muted); font-weight: 600; margin-top: auto; }
+  .tile.good .status { color: var(--green-dark); }
+  .print-names { display: none; }
+
+  /* Day */
+  .day-grid { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 22px; align-items: start; }
+  .meals { display: grid; gap: 12px; }
+  .meal-row { display: grid; grid-template-columns: 104px minmax(0, 1fr) auto; gap: 18px; align-items: center; padding: 12px; border: 1px solid var(--line); border-radius: var(--radius); background: #fff; }
+  .meal-row.empty { border-style: dashed; background: var(--soft); }
+  .meal-row.conflict { border-color: var(--warn); background: var(--warn-soft); }
+  .meal-row .ph { width: 104px; height: 104px; border-radius: 10px; object-fit: cover; display: grid; place-items: center; background: #fff; color: var(--green); }
+  .meal-row .ph .ic { width: 34px; height: 34px; }
+  .slot-label { font-size: .78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--green); }
+  .meal-row .name { font: 650 1.25rem var(--serif); margin: 2px 0 4px; }
+  .facts { color: var(--muted); font-size: .95rem; font-variant-numeric: tabular-nums; }
+  .actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
+  .fav { color: var(--muted); }
+  .fav[aria-pressed=true] { color: #b42318; border-color: #f3c7c3; background: #fff5f4; }
+  .fav[aria-pressed=true] svg { fill: currentColor; }
+  .side { display: grid; gap: 14px; }
+  .side .btn { width: 100%; }
+  .report { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+  .report li { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center; padding: 12px 14px; border-radius: 10px; background: var(--soft); }
+  .report li .ic { color: var(--green); width: 22px; height: 22px; }
+  .report li.bad { background: var(--warn-soft); }
+  .report li.bad .ic { color: var(--warn); }
+  .report .word { font-weight: 700; color: var(--green-dark); text-align: right; }
+  .report li.bad .word { color: var(--warn); }
+  textarea { width: 100%; min-height: 90px; border: 1.5px solid var(--line); border-radius: 10px; padding: 10px 12px; resize: vertical; }
+
+  /* Chooser */
+  dialog { border: 0; border-radius: 18px; padding: 0; width: min(1000px, calc(100% - 24px)); max-height: calc(100vh - 24px); color: var(--ink); }
+  dialog[open] { animation: viewIn .2s ease-out; }
+  dialog::backdrop { background: rgb(20 35 25 / .55); }
+  .dlg-head { position: sticky; top: 0; z-index: 1; background: #fff; padding: 18px 20px 14px; border-bottom: 1px solid var(--line); display: grid; gap: 12px; }
+  .dlg-head .row { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+  .search-box { position: relative; }
+  .search-box .ic { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--muted); }
+  .search { width: 100%; min-height: 54px; padding: 0 16px 0 44px; border: 1.5px solid var(--line); border-radius: 10px; font-size: 1.05rem; }
+  .search:focus { border-color: var(--green); outline: none; }
+  .filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .chip-btn { min-height: 40px; padding: 0 14px; border-radius: 99px; border: 1.5px solid var(--line); background: #fff; font-weight: 600; cursor: pointer; }
+  .chip-btn[aria-pressed=true] { background: var(--green); color: #fff; border-color: var(--green); }
+  .filters select { min-height: 40px; border: 1.5px solid var(--line); border-radius: 10px; padding: 0 10px; margin-left: auto; background: #fff; }
+  .choices { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 14px; padding: 20px; }
+  .choice { position: relative; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; background: #fff; transition: border-color .15s, box-shadow .15s; }
+  .choice:hover { border-color: var(--green); box-shadow: 0 6px 18px rgb(20 40 25 / .1); }
+  .choice .pick { display: block; width: 100%; padding: 0 0 14px; border: 0; background: none; text-align: left; cursor: pointer; }
+  .choice .ph { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; display: grid; place-items: center; background: var(--soft); color: var(--green); }
+  .choice .ph .ic { width: 40px; height: 40px; }
+  .choice .name { display: block; font-weight: 700; font-size: 1.05rem; padding: 10px 14px 2px; }
+  .choice .facts { display: block; padding: 0 14px; font-size: .9rem; }
+  .badges { display: flex; flex-wrap: wrap; gap: 4px; padding: 8px 14px 0; }
+  .badge { font-size: .74rem; font-weight: 700; padding: 2px 8px; border-radius: 99px; background: var(--sage); color: var(--green-dark); }
+  .choice .fav { position: absolute; top: 8px; right: 8px; width: 42px; height: 42px; min-height: 0; padding: 0; border-radius: 50%; background: rgb(255 255 255 / .94); }
+  .dlg-note { padding: 0 20px 20px; }
+
+  /* Shopping */
+  .shop-list { list-style: none; padding: 0; margin: 18px 0; display: grid; gap: 8px; }
+  .check { display: grid; grid-template-columns: auto auto minmax(0, 1fr) auto; gap: 14px; align-items: center; padding: 10px 16px 10px 12px; border: 1px solid var(--line); border-radius: 12px; cursor: pointer; }
+  .check input { width: 28px; height: 28px; accent-color: var(--green); }
+  .check img, .check .noimg { width: 60px; height: 60px; border-radius: 10px; object-fit: cover; }
+  .check .name { font-weight: 700; font-size: 1.08rem; }
+  .check .qty { color: var(--muted); font-weight: 400; display: block; font-size: .92rem; }
+  .check .cost { font-weight: 600; font-variant-numeric: tabular-nums; }
+  .check:has(input:checked) { background: var(--soft); }
+  .check:has(input:checked) .name { text-decoration: line-through; color: var(--muted); }
+  .shop-group { font: 650 1.15rem var(--serif); margin: 22px 0 0; }
+
+  /* Settings */
+  .settings { display: grid; gap: 18px; max-width: 820px; }
+  .q { margin: 0; border: 1px solid var(--line); border-radius: var(--radius); padding: 22px; min-width: 0; }
+  .q > legend, .q > h2 { font: 650 1.25rem var(--serif); padding: 0; margin-bottom: 4px; }
+  .q .help { color: var(--muted); margin-bottom: 14px; }
+  .fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 18px; }
+  .field > label, .field > span { display: block; font-weight: 600; margin-bottom: 6px; }
+  .stepper { display: flex; gap: 6px; align-items: center; }
+  .stepper input { width: 120px; min-height: 52px; text-align: center; font-size: 1.2rem; font-weight: 700; border: 1.5px solid var(--line); border-radius: 10px; }
+  .stepper .btn { width: 52px; padding: 0; }
+  .options { display: flex; flex-wrap: wrap; gap: 10px; }
+  .opt { display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 0 16px; border: 1.5px solid var(--line); border-radius: 10px; cursor: pointer; font-weight: 600; }
+  .opt input { width: 22px; height: 22px; accent-color: var(--green); }
+  .opt:has(input:checked) { border-color: var(--green); background: var(--sage); }
+  .opt.avoid:has(input:checked) { border-color: var(--warn); background: var(--warn-soft); }
+  .presets { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+  select.sel, input.txt { min-height: 52px; border: 1.5px solid var(--line); border-radius: 10px; padding: 0 12px; background: #fff; width: 100%; }
+  .welcome { display: flex; gap: 12px; background: var(--sage); border-radius: var(--radius); padding: 16px 20px; margin-bottom: 18px; font-size: 1.05rem; max-width: 820px; }
+  .custom-list { list-style: none; padding: 0; margin: 0 0 16px; display: grid; gap: 8px; }
+  .custom-list li { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; }
+  .custom-list .grow { flex: 1; }
+
+  .credits td, .credits th { padding: 8px 10px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: middle; }
+  .credits { border-collapse: collapse; width: 100%; font-size: .95rem; }
+  .credits img { width: 56px; height: 42px; object-fit: cover; border-radius: 6px; display: block; }
+
+  #toast { position: fixed; left: 0; right: 0; margin: 0 auto; width: fit-content; max-width: calc(100% - 32px); bottom: 24px; z-index: 30;
+    display: flex; gap: 14px; align-items: center; background: var(--ink); color: #fff; padding: 10px 10px 10px 20px; border-radius: 12px;
+    box-shadow: 0 10px 30px rgb(0 0 0 / .2); font-weight: 600; animation: viewIn .2s ease-out; }
+  #toast .btn { min-height: 42px; background: #fff; color: var(--ink); border-color: #fff; }
+  footer { border-top: 1px solid var(--line); padding: 28px 0 36px; color: var(--muted); font-size: .92rem; }
+  footer .wrap { display: flex; flex-wrap: wrap; gap: 8px 20px; justify-content: space-between; }
+
+  @media (max-width: 980px) {
+    .hero, .day-grid, .dash { grid-template-columns: 1fr; }
+    .hero h1 { font-size: 2.3rem; }
+    .float.a { left: 10px; } .float.b { right: 10px; }
+    .grid3 { grid-template-columns: 1fr; }
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    nav a .lbl { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); } /* icon-only, still read aloud */
+  }
+  @media (max-width: 760px) {
+    body { padding-bottom: 82px; }
+    nav { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; background: #fff; border-top: 1px solid var(--line);
+      display: grid; grid-template-columns: repeat(5, 1fr); padding: 6px 2px calc(6px + env(safe-area-inset-bottom)); }
+    nav a { flex-direction: column; gap: 2px; padding: 6px 0; font-size: .72rem; }
+    nav a .lbl { position: static; width: auto; height: auto; clip: auto; }
+    nav a .ic { width: 22px; height: 22px; }
+    #toast { bottom: 94px; }
+    h1 { font-size: 1.7rem; }
+    .hero h1 { font-size: 2rem; }
+    .float { display: none; }
+    .sample, .today-meals { grid-template-columns: repeat(2, 1fr); }
+    .stats { grid-template-columns: 1fr 1fr; gap: 10px; }
+    .stat { padding: 14px; }
+    .stat .big { font-size: 1.5rem; }
+    .month-nav { width: 100%; justify-content: space-between; }
+    .month-nav h1 { min-width: 0; font-size: 1.4rem; }
+    .calendar { grid-template-columns: 1fr; }
+    .wd, .pad { display: none; }
+    .tile { display: grid; grid-template-columns: 2.3em minmax(0, 1fr) 120px; grid-template-areas: "num name thumbs" "num status thumbs"; align-items: center; column-gap: 10px; min-height: 76px; }
+    .tile .top { grid-area: num; }
+    .tile .top .ok { display: none; }
+    .tile .wdname { display: block; grid-area: name; font-weight: 600; }
+    .tile .status { grid-area: status; margin: 0; }
+    .thumbs { grid-area: thumbs; grid-template-columns: repeat(4, 1fr); }
+    .meal-row { grid-template-columns: 80px minmax(0, 1fr); }
+    .meal-row .ph { width: 80px; height: 80px; }
+    .meal-row .actions { grid-column: 1 / -1; justify-content: stretch; }
+    .meal-row .actions .btn:not(.fav) { flex: 1; }
+    .check { grid-template-columns: auto auto minmax(0, 1fr); }
+    .check .cost { grid-column: 3; }
+    .filters select { margin-left: 0; }
+    .credits th:nth-child(4), .credits td:nth-child(4) { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+  }
+  @media print {
+    header, nav, footer, #toast, .no-print { display: none !important; }
+    body { padding: 0; }
+    .tile, .check { break-inside: avoid; }
+    .thumbs { display: none; }
+    .print-names { display: block; margin: 0; padding-left: 14px; font-size: .75rem; }
+  }
+</style>
+</head>
+<body>
+<header class="no-print">
+  <div class="wrap">
+    <a class="brand" href="#home"><span class="mark"><i data-lucide="leaf" class="ic"></i></span>Plate Planner</a>
+    <nav aria-label="Main">
+      <a href="#dash"><i data-lucide="layout-dashboard" class="ic"></i><span class="lbl">Dashboard</span></a>
+      <a href="#month"><i data-lucide="calendar-days" class="ic"></i><span class="lbl">My month</span></a>
+      <a href="#shop"><i data-lucide="shopping-basket" class="ic"></i><span class="lbl">Shopping</span></a>
+      <a href="#settings"><i data-lucide="sliders-horizontal" class="ic"></i><span class="lbl">Settings</span></a>
+      <a href="#home"><i data-lucide="house" class="ic"></i><span class="lbl">About</span></a>
+    </nav>
+    <button type="button" class="btn quiet" id="text-size" aria-pressed="false"><i data-lucide="type" class="ic"></i><span>Bigger text</span></button>
+  </div>
+</header>
+
+<main class="wrap">
+  <!-- Landing -->
+  <section id="home" class="view">
+    <div class="hero">
+      <div>
+        <p class="eyebrow">Meal planning made simple</p>
+        <h1 tabindex="-1">A month of good meals, planned in an afternoon</h1>
+        <p class="lead">Soul food, Caribbean and African dishes you know and love, balanced for your health. Choose meals from real photos, see at a glance whether you're eating well, and take a ready-made shopping list to the shop. No sign-up, and nothing leaves this device.</p>
+        <div class="btn-row">
+          <button type="button" class="btn primary big start">Start planning <i data-lucide="arrow-right" class="ic"></i></button>
+          <button type="button" class="btn big" id="see-how">See how it works</button>
+        </div>
+        <div class="trust">
+          <span><i data-lucide="shield-check" class="ic"></i>Private: stays on your device</span>
+          <span><i data-lucide="type" class="ic"></i>Large, clear text</span>
+          <span><i data-lucide="badge-check" class="ic"></i>Free to use</span>
+        </div>
+      </div>
+      <div class="hero-art">
+        <img id="hero-img" alt="A market stall full of fresh fruit and vegetables">
+        <div class="float b" id="float-b"></div>
+        <div class="float a" id="float-a"></div>
+      </div>
+    </div>
+
+    <div class="section" id="how">
+      <p class="eyebrow">How it works</p>
+      <h2>Three steps, a few minutes each</h2>
+      <div class="grid3">
+        <div class="feat"><div class="step-n">01</div><h3>Tell us what you need</h3><p>Your daily calories, a sugar limit, how many people you cook for, your budget and any foods you avoid.</p></div>
+        <div class="feat"><div class="step-n">02</div><h3>Fill your calendar</h3><p>Tap a day and pick meals from photos, or press "Fill my month" and we'll choose balanced meals for you.</p></div>
+        <div class="feat"><div class="step-n">03</div><h3>Shop with a list</h3><p>Everything for the month in one list you can tick off on your phone or print out.</p></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <p class="eyebrow">A day on Plate Planner</p>
+      <h2>The food you grew up with, made balanced</h2>
+      <p>Over 70 meals: soul food, Caribbean, West African and East African dishes, plus everyday favourites. You can add your own family recipes too.</p>
+      <div class="sample" id="sample"></div>
+    </div>
+
+    <div class="section">
+      <p class="eyebrow">What you get</p>
+      <h2>Everything in one place</h2>
+      <div class="grid3">
+        <div class="feat"><div class="badge-ic"><i data-lucide="layout-dashboard" class="ic"></i></div><h3>A clear dashboard</h3><p>Today's meals, your spending and a chart of your month, all on one screen.</p></div>
+        <div class="feat"><div class="badge-ic"><i data-lucide="sparkles" class="ic"></i></div><h3>Fill my month</h3><p>One tap plans every empty day around your goals, budget and favourite meals.</p></div>
+        <div class="feat"><div class="badge-ic"><i data-lucide="shield-alert" class="ic"></i></div><h3>Allergies respected</h3><p>Meals with foods you avoid never appear. Vegetarian, vegan and pescatarian too.</p></div>
+        <div class="feat"><div class="badge-ic"><i data-lucide="heart" class="ic"></i></div><h3>Your favourites</h3><p>Heart the meals you love and they come first, in your choices and in the planner.</p></div>
+        <div class="feat"><div class="badge-ic"><i data-lucide="chef-hat" class="ic"></i></div><h3>Your own recipes</h3><p>Add family meals with their calories and price, and plan them like any other.</p></div>
+        <div class="feat"><div class="badge-ic"><i data-lucide="undo-2" class="ic"></i></div><h3>Nothing to break</h3><p>Every change can be undone, and you can save a backup of your plans.</p></div>
+      </div>
+    </div>
+
+    <div class="band">
+      <h2>Ready when you are</h2>
+      <p>Most people plan their first week in under ten minutes.</p>
+      <button type="button" class="btn big start">Start planning <i data-lucide="arrow-right" class="ic"></i></button>
+    </div>
+  </section>
+
+  <!-- Dashboard -->
+  <section id="dash" class="view" hidden>
+    <div class="page-head">
+      <div><p class="eyebrow" id="dash-date"></p><h1 tabindex="-1" id="dash-title"></h1></div>
+      <div class="month-nav no-print">
+        <button type="button" class="btn icon quiet" data-month="-1" aria-label="Previous month"><i data-lucide="chevron-left" class="ic"></i></button>
+        <b id="dash-month"></b>
+        <button type="button" class="btn icon quiet" data-month="1" aria-label="Next month"><i data-lucide="chevron-right" class="ic"></i></button>
+      </div>
+    </div>
+    <div class="stats" id="stats"></div>
+    <div class="dash">
+      <div>
+        <div class="card" id="today-card"></div>
+        <div class="card">
+          <h2><i data-lucide="flame" class="ic"></i>Calories each day</h2>
+          <p class="muted">Each bar is one day. The dashed line is your goal. Tap a bar to open that day.</p>
+          <div class="chart" id="kcal-chart"></div>
+          <details class="table"><summary>Show as a table</summary><div id="kcal-table"></div></details>
+        </div>
+        <div class="card">
+          <h2><i data-lucide="wallet" class="ic"></i>Spending by week</h2>
+          <div class="hbars" id="week-bars"></div>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <h2><i data-lucide="heart-pulse" class="ic"></i>Daily averages</h2>
+          <div class="nut" id="averages"></div>
+        </div>
+        <div class="card">
+          <h2><i data-lucide="triangle-alert" class="ic"></i>Days to look at</h2>
+          <ul class="list" id="attention"></ul>
+        </div>
+        <div class="card">
+          <h2><i data-lucide="trophy" class="ic"></i>Most planned meals</h2>
+          <ul class="list" id="top-meals"></ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Month -->
+  <section id="month" class="view" hidden>
+    <div class="page-head">
+      <div class="month-nav">
+        <button type="button" class="btn icon quiet" data-month="-1" aria-label="Previous month"><i data-lucide="chevron-left" class="ic"></i></button>
+        <h1 id="month-title" tabindex="-1"></h1>
+        <button type="button" class="btn icon quiet" data-month="1" aria-label="Next month"><i data-lucide="chevron-right" class="ic"></i></button>
+      </div>
+      <div class="btn-row no-print">
+        <button type="button" class="btn quiet" id="this-month">This month</button>
+        <button type="button" class="btn primary" id="fill-month"><i data-lucide="sparkles" class="ic"></i>Fill my month</button>
+        <button type="button" class="btn quiet" id="print-month"><i data-lucide="printer" class="ic"></i>Print</button>
+        <button type="button" class="btn quiet" id="clear-month"><i data-lucide="eraser" class="ic"></i>Clear</button>
+      </div>
+    </div>
+    <div class="summary" id="month-summary"></div>
+    <div class="calendar" id="calendar"></div>
+  </section>
+
+  <!-- Day -->
+  <section id="day" class="view" hidden>
+    <div class="page-head">
+      <div><p class="eyebrow" id="day-eyebrow"></p><h1 id="day-title" tabindex="-1"></h1></div>
+      <div class="btn-row">
+        <button type="button" class="btn quiet" id="prev-day"><i data-lucide="chevron-left" class="ic"></i>Day before</button>
+        <button type="button" class="btn quiet" id="next-day">Next day<i data-lucide="chevron-right" class="ic"></i></button>
+      </div>
+    </div>
+    <div class="day-grid">
+      <div class="meals" id="meals"></div>
+      <div class="side">
+        <div class="card"><h2><i data-lucide="clipboard-check" class="ic"></i>How this day looks</h2><div id="day-report"></div></div>
+        <button type="button" class="btn primary" id="fill-day"><i data-lucide="sparkles" class="ic"></i>Fill this day for me</button>
+        <button type="button" class="btn" id="copy-day"><i data-lucide="copy" class="ic"></i>Copy yesterday's meals</button>
+        <div class="card">
+          <h2><i data-lucide="notebook-pen" class="ic"></i><label for="day-note">Notes for this day</label></h2>
+          <textarea id="day-note" placeholder="For example: lunch at Mary's, buy fresh bread"></textarea>
+        </div>
+        <a class="btn quiet" href="#month"><i data-lucide="calendar-days" class="ic"></i>Back to my month</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Shopping -->
+  <section id="shop" class="view" hidden>
+    <div class="page-head">
+      <div><p class="eyebrow" id="shop-eyebrow"></p><h1 id="shop-title" tabindex="-1">Shopping list</h1></div>
+      <div class="btn-row no-print">
+        <select class="sel" id="shop-range" aria-label="Which days to shop for" style="width:auto">
+          <option value="month">Whole month</option><option value="1">Week 1 (days 1–7)</option><option value="2">Week 2 (days 8–14)</option>
+          <option value="3">Week 3 (days 15–21)</option><option value="4">Week 4 (days 22–28)</option><option value="5">Week 5 (day 29 on)</option>
+        </select>
+        <button type="button" class="btn" id="print"><i data-lucide="printer" class="ic"></i>Print</button>
+        <button type="button" class="btn quiet" id="untick"><i data-lucide="rotate-ccw" class="ic"></i>Untick all</button>
+      </div>
+    </div>
+    <p class="muted">Tick each meal once you have what you need. Numbers are servings for your household.</p>
+    <div id="shop-list"></div>
+    <p class="card" id="shop-total" style="margin-top:18px"></p>
+  </section>
+
+  <!-- Settings -->
+  <section id="settings" class="view" hidden>
+    <div class="page-head"><div><p class="eyebrow">Settings</p><h1 tabindex="-1">Make it yours</h1></div></div>
+    <p class="welcome" id="welcome" hidden><i data-lucide="hand-heart" class="ic"></i><span>Welcome! Answer a few questions so we can suggest the right meals. Not sure? Press "Save settings" at the bottom. You can change anything later.</span></p>
+    <form class="settings" id="settings-form" novalidate>
+      <fieldset class="q">
+        <legend>Your daily goals</legend>
+        <p class="help">Pick a starting point, then adjust if you like. Many adults aim for about 2,000 calories.</p>
+        <div class="presets" id="presets"></div>
+        <div class="fields">
+          <div class="field"><label for="kcal">Calories a day</label><div class="stepper" data-for="kcal"></div></div>
+          <div class="field"><label for="protein">Protein a day (grams)</label><div class="stepper" data-for="protein"></div></div>
+          <div class="field"><label for="sugar">Most sugar a day (grams)</label><div class="stepper" data-for="sugar"></div></div>
+        </div>
+      </fieldset>
+      <fieldset class="q">
+        <legend>Household and budget</legend>
+        <p class="help">Shopping amounts and costs are multiplied by the number of people.</p>
+        <div class="fields">
+          <div class="field"><label for="people">People you cook for</label><div class="stepper" data-for="people"></div></div>
+          <div class="field"><label for="budget">Food budget for the month</label><div class="stepper" data-for="budget"></div></div>
+          <div class="field"><label for="currency">Currency</label>
+            <select class="sel" id="currency" name="currency"><option value="$">$ Dollar</option><option value="£">£ Pound</option><option value="€">€ Euro</option></select></div>
+        </div>
+      </fieldset>
+      <fieldset class="q">
+        <legend>How you eat</legend>
+        <p class="help">Meals that don't fit are never offered or chosen for you.</p>
+        <div class="options" id="diet"></div>
+        <p class="pill" id="vegan-note" style="margin-top:12px">Our starter vegan meals are on the light side. Add your own hearty meals below, or lower your calorie and protein goals.</p>
+        <p class="field" style="margin-top:18px"><span>Foods you must avoid</span></p>
+        <div class="options" id="avoid"></div>
+      </fieldset>
+      <fieldset class="q">
+        <legend>Cuisines you love</legend>
+        <p class="help">"Fill my month" picks from these first. You can still choose any meal yourself.</p>
+        <div class="options" id="cuisines"></div>
+      </fieldset>
+      <fieldset class="q">
+        <legend>Which meals to plan</legend>
+        <p class="help">Untick any you don't want in your calendar, such as snacks.</p>
+        <div class="options" id="slots"></div>
+        <p class="field" style="margin-top:18px"><span>Weeks start on</span></p>
+        <div class="options">
+          <label class="opt"><input type="radio" name="weekStart" value="1">Monday</label>
+          <label class="opt"><input type="radio" name="weekStart" value="0">Sunday</label>
+        </div>
+      </fieldset>
+      <p class="warn-text" id="settings-error" role="alert" hidden></p>
+      <div class="btn-row"><button type="submit" class="btn primary big"><i data-lucide="check" class="ic"></i>Save settings</button></div>
+    </form>
+
+    <div class="settings" style="margin-top:18px">
+      <section class="q" aria-labelledby="custom-h">
+        <h2 id="custom-h">Your own meals</h2>
+        <p class="help">Add meals you cook often. Rough numbers are fine.</p>
+        <ul class="custom-list" id="custom-list"></ul>
+        <form id="custom-form" class="fields" novalidate>
+          <div class="field"><label for="c-name">Meal name</label><input class="txt" id="c-name" maxlength="40" required></div>
+          <div class="field"><label for="c-slot">Meal</label><select class="sel" id="c-slot"></select></div>
+          <div class="field"><label for="c-kcal">Calories</label><input class="txt" id="c-kcal" type="number" inputmode="numeric" min="0" max="3000" required></div>
+          <div class="field"><label for="c-protein">Protein (g)</label><input class="txt" id="c-protein" type="number" inputmode="numeric" min="0" max="300" required></div>
+          <div class="field"><label for="c-sugar">Sugar (g)</label><input class="txt" id="c-sugar" type="number" inputmode="numeric" min="0" max="300" required></div>
+          <div class="field"><label for="c-cost">Cost per serving</label><input class="txt" id="c-cost" type="number" inputmode="decimal" min="0" max="200" step="0.01" required></div>
+          <div class="field" style="grid-column:1/-1"><span>Contains</span><div class="options" id="c-tags"></div></div>
+          <p class="warn-text" id="custom-error" role="alert" hidden style="grid-column:1/-1"></p>
+          <div style="grid-column:1/-1"><button type="submit" class="btn primary"><i data-lucide="plus" class="ic"></i>Add meal</button></div>
+        </form>
+      </section>
+      <section class="q" aria-labelledby="backup-h">
+        <h2 id="backup-h">Backup</h2>
+        <p class="help">Your plans live only in this browser. Save a backup file to keep them safe or move them to another device.</p>
+        <div class="btn-row">
+          <button type="button" class="btn" id="backup"><i data-lucide="download" class="ic"></i>Save a backup</button>
+          <label class="btn" for="restore"><i data-lucide="upload" class="ic"></i>Restore a backup</label>
+          <input type="file" id="restore" accept="application/json,.json" class="sr">
+          <button type="button" class="btn quiet" id="reset-all"><i data-lucide="trash-2" class="ic"></i>Delete everything</button>
+        </div>
+      </section>
+    </div>
+  </section>
+
+  <!-- Credits -->
+  <section id="credits" class="view" hidden>
+    <div class="page-head"><div><p class="eyebrow">Thank you</p><h1 tabindex="-1">Photo credits</h1></div></div>
+    <p class="muted" style="margin-bottom:16px">All food photos come from Wikimedia Commons and are used under the licenses below. Tap a photo's name to see the original.</p>
+    <div style="overflow-x:auto"><table class="credits" id="credits-table"></table></div>
+  </section>
+</main>
+
+<footer class="no-print">
+  <div class="wrap">
+    <span>Plate Planner · Nutrition and prices are rough estimates, not medical or dietary advice.</span>
+    <a href="#credits">Photo credits</a>
+  </div>
+</footer>
+
+<dialog id="chooser" aria-labelledby="chooser-title">
+  <div class="dlg-head">
+    <div class="row">
+      <h2 id="chooser-title"></h2>
+      <button type="button" class="btn quiet" id="chooser-close"><i data-lucide="x" class="ic"></i>Close</button>
+    </div>
+    <div class="search-box"><i data-lucide="search" class="ic"></i>
+      <input id="search" class="search" type="search" placeholder="Search meals, e.g. chicken" autocomplete="off" aria-label="Search meals"></div>
+    <div class="filters" id="filters"></div>
+  </div>
+  <div class="choices" id="choices"></div>
+  <p class="dlg-note muted" id="chooser-note"></p>
+</dialog>
+
+<div id="toast" role="status" hidden><span id="toast-msg"></span><button type="button" class="btn" id="toast-undo"><i data-lucide="undo-2" class="ic"></i>Undo</button></div>
+
+<script>
+const SLOTS = [['b', 'Breakfast'], ['l', 'Lunch'], ['d', 'Dinner'], ['s', 'Snack']];
+const ALLERGENS = [['nuts', 'Nuts'], ['gluten', 'Gluten (wheat)'], ['dairy', 'Dairy'], ['egg', 'Eggs'], ['fish', 'Fish & seafood'], ['soy', 'Soy']];
+const DIETS = { all: [], pescatarian: ['meat'], vegetarian: ['meat', 'fish'], vegan: ['meat', 'fish', 'dairy', 'egg'] };
+const TAGS = ['meat', ...ALLERGENS.map(a => a[0])];
+const PHOTOS = {"oats":{"src":"https://thumb.wikimedia.org/wikipedia/commons/thumb/4/4c/Healthy_Oatmeal_with_Berries_-_49859913257.jpg/500px-Healthy_Oatmeal_with_Berries_-_49859913257.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail","page":"https://commons.wikimedia.org/wiki/File:Healthy_Oatmeal_with_Berries_-_49859913257.jpg","license":"CC BY-SA 2.0","artist":"FitTasteTic"},"eggs":{"src":"https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e4/Scrambled_eggs_on_toast_-_Joe%27s_Cafe_2024-04-14.jpg/500px-Scrambled_eggs_on_toast_-_Joe%27s_Cafe_2024-04-14.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail","page":"https://commons.wikimedia.org/wiki/File:Scrambled_eggs_on_toast_-_Joe%27s_Cafe_2024-04-14.jpg","license":"CC0","artist":"Andy Li"},"tofu":{"src":"https://thumb.wikimedia.org/wikipedia/commons/thumb/5/5b/Tofu_Scramble_in_New_Orleans.jpg/500px-Tofu_Scramble_in_New_Orleans.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail","page":"https://commons.wikimedia.org/wiki/File:Tofu_Scramble_in_New_Orleans.jpg","license":"CC BY 2.0","artist":"Bart Everson"},"pancakes":{"src":"https://thumb.wikimedia.org/wikipedia/commons/thumb/7/74/The_Smoking_Stack_Pancakes_-_Laughing_Dog_2026-08-25.jpg/500px-The_Smoking_Stack_Pancakes_-_Laughing_Dog_2026-08-25.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail","page":"https://commons.wikimedia.org/wiki/File:The_Smoking_Stack_Pancakes_-_Laughing_Dog_2026-08-25.jpg","license":"CC0","artist":"Andy Li"},"chia":{"src":"https://thumb.wikimedia.org/wikipedia/commons/thumb/9/90/Chia_seed_pudding_in_a_tea_cup.jpg/500px-Chia_seed_pudding_in_a_tea_cup.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail","page":"https://commons.wikimedia.org/wiki/File:Chia_seed_pudding_in_a_tea_cup.jpg","license":"CC0","artist":"Miscellaneous contributor"},"toast-jam":{"src":"https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c0/Peanut_butter_and_marmelade_on_toasted_%27everything%27_bagel_-_Massachusetts.jpg/500px-Peanut_butter_and_marmelade_on_toasted_%27everything%27_bagel_-_Massachusetts.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail","page":"https://commons.wikimedia.org/wiki/File:Peanut_butter_and_marmelade_on_toasted_%27everything%27_bagel_-_Massachusetts.jpg","license":"CC0","artist":"Daderot"},"chicken-salad":{"src":"https://thumb.wikimedia.org/wikipedia/commons/thumb/7/72/Chicken_salad.jpg/500px-Chicken_salad.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail","page":"https://commons.wikimedia.org/wiki/File:Chicken_salad.jpg","license":"CC BY-SA 4.0","artist":"Shark2025"},"lentil-soup":{"src":"https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ee/Bowl_of_lentil_soup_with_green_and_red_lentils.jpg/500px-Bowl_of_lentil_soup_with_green_and_red_lentils.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail","page":"https://commons.wikimedia.org/wiki/File:Bowl_of_lentil_soup_with_green_and_red_lentils.jpg","license":"CC BY-SA 4.0","artist":"Whoisjohngalt"},"tuna-wrap":{"src":"https://thumb.wikimedia.org/wikipedia/commons/thumb/7/71/Albacore_tuna_rice_wrap_%287000531264%29.jpg/500px-Albacore_tuna_rice_wrap_%287000531264%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail","page":"https://commons.wikimedia.org/wiki/File:Albacore_tuna_rice_wrap_(7000531264).jpg","license":"CC BY-SA 2.0","artist":"Jen Arrr"},"burger":{"src":"https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c4/Cheeseburger_and_fries_4.jpg/500px-Cheeseburger_and_fries_4.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail","page":"https://commons.wikimedia.org/wiki/File:Cheeseburger_and_fries_4.jpg","license":"CC0","artist":"Kurtkaiser"},"sushi":{"src":"https://thumb.wikimedia.org/wikipedia/commons/thumb/5/58/Homemade_salmon_sushi_3.jpg/500px-Homemade_salmon_sushi_3.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail","page":"https://commons.wikimedia.org/wiki/File:Homemade_salmon_sushi_3.jpg","license":"CC BY 4.0","artist":"에그란"},"burrito":{"src":"https://thumb.wikimedia.org/wikipedia/commons/thumb/4/44/Burrito_chihuahuense_de_chile_verde.jpg/500px-Burrito_chihuahuense_de_chile_verde.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail","page":"https://commons.wikimedia.org/wiki/File:Burrito_chihuahuense_de_chile_verde.jpg","license":"CC BY-SA 4.0","artist":"Levi bernardo"},"cheese-toast":{"src":"https://thumb.wikimedia.org/wikipedia/commons/thumb/e/eb/Pauline%27s_cheese_on_toast.png/500px-Pauline%27s_cheese_on_toast.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail","page":"https://commons.wikimedia.org/wiki/File:Pauline%27s_cheese_on_toast.png","license":"CC BY-SA 4.0","artist":"Fortuna Imperatrix Mundi"},"stir-fry":{"src":"https://thumb.wikimedia.org/wikipedia/commons/thumb/5/50/Stir_Fry_with_Tofu.JPG/500px-Stir_Fry_with_Tofu.JPG?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail","page":"https://commons.wikimedia.org/wiki/File:Stir_Fry_with_Tofu.JPG","license":"CC BY-SA 3.0","artist":"ParentingPatch"},"pasta":{"src":"https://thumb.wikimedia.org/wikipedia/commons/thumb/1/11/Spaghetti_Bolognese_Lokal_K.jpg/500px-Spaghetti_Bolognese_Lokal_K.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail","page":"https://commons.wikimedia.org/wiki/File:Spaghetti_Bolognese_Lokal_K.jpg","license":"CC BY-SA 3.0","artist":"Superbass"},"chili":{"src":"https://thumb.wikimedia.org/wikipedia/commons/thumb/2/29/Chili_con_carne_%284431800858%29.jpg/500px-Chili_con_carne_%284431800858%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail","page":"https://commons.wikimedia.org/wiki/File:Chili_con_carne_(4431800858).jpg","license":"CC BY-SA 2.0","artist":"cyclonebill from Copenhagen, Denmark"},"pizza":{"src":"https://thumb.wikimedia.org/wikipedia/commons/thumb/4/46/Pizza-napoletana.jpg/500px-Pizza-napoletana.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail","page":"https://commons.wikimedia.org/wiki/File:Pizza-napoletana.jpg","license":"CC BY-SA 4.0","artist":"Fabryx98"},"curry":{"src":"https://thumb.wikimedia.org/wikipedia/commons/thumb/0/02/%D0%9A%D0%B0%D1%80%D0%B8_%D1%81%D0%BE_%D0%BD%D0%B0%D1%83%D1%82_%D0%B8_%D1%82%D0%B8%D0%BA%D0%B2%D0%B8%D1%87%D0%BA%D0%B8.jpg/500px-%D0%9A%D0%B0%D1%80%D0%B8_%D1%81%D0%BE_%D0%BD%D0%B0%D1%83%D1%82_%D0%B8_%D1%82%D0%B8%D0%BA%D0%B2%D0%B8%D1%87%D0%BA%D0%B8.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail","page":"https://commons.wikimedia.org/wiki/File:%D0%9A%D0%B0%D1%80%D0%B8_%D1%81%D0%BE_%D0%BD%D0%B0%D1%83%D1%82_%D0%B8_%D1%82%D0%B8%D0%BA%D0%B2%D0%B8%D1%87%D0%BA%D0%B8.jpg","license":"CC BY-SA 4.0","artist":"Deodora333"},"steak":{"src":"https://thumb.wikimedia.org/wikipedia/commons/thumb/9/93/Liat_Portal_for_Foodie_Disorder_-_Homemade_steak_with_roasted_potatoes.jpg/500px-Liat_Portal_for_Foodie_Disorder_-_Homemade_steak_with_roasted_potatoes.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail","page":"https://commons.wikimedia.org/wiki/File:Liat_Portal_for_Foodie_Disorder_-_Homemade_steak_with_roasted_potatoes.jpg","license":"CC BY-SA 4.0","artist":"HaJunkiyada"},"satay":{"src":"https://thumb.wikimedia.org/wikipedia/commons/thumb/3/35/Shachamian.JPG/500px-Shachamian.JPG?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail","page":"https://commons.wikimedia.org/wiki/File:Shachamian.JPG","license":"CC BY 3.0","artist":"Xmhaoyu"},"roast":{"src":"https://thumb.wikimedia.org/wikipedia/commons/thumb/6/61/Liat_Portal_for_Foodie_Disorder_-_Roasted_Chicken_with_Seasonal_Vegetables.jpg/500px-Liat_Portal_for_Foodie_Disorder_-_Roasted_Chicken_with_Seasonal_Vegetables.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail","page":"https://commons.wikimedia.org/wiki/File:Liat_Portal_for_Foodie_Disorder_-_Roasted_Chicken_with_Seasonal_Vegetables.jpg","license":"CC BY-SA 4.0","artist":"HaJunkiyada"},"fish-pie":{"src":"https://thumb.wikimedia.org/wikipedia/commons/thumb/6/6b/Fish_Pie.jpg/500px-Fish_Pie.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail","page":"https://commons.wikimedia.org/wiki/File:Fish_Pie.jpg","license":"CC BY-SA 3.0","artist":"Atelier Joly"},"hummus":{"src":"https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9f/Black_bean_hummus_and_vegetables_-_2021-11-20_-_Sarah_Stierch.jpg/500px-Black_bean_hummus_and_vegetables_-_2021-11-20_-_Sarah_Stierch.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail","page":"https://commons.wikimedia.org/wiki/File:Black_bean_hummus_and_vegetables_-_2021-11-20_-_Sarah_Stierch.jpg","license":"CC BY 4.0","artist":"Missvain"},"bar":{"src":"https://thumb.wikimedia.org/wikipedia/commons/thumb/5/55/Three_protein_bars.jpg/500px-Three_protein_bars.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail","page":"https://commons.wikimedia.org/wiki/File:Three_protein_bars.jpg","license":"CC0","artist":"Mx. Granger"},"crisps":{"src":"https://thumb.wikimedia.org/wikipedia/commons/thumb/2/21/Bowl_of_Terra_Chips.jpg/500px-Bowl_of_Terra_Chips.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail","page":"https://commons.wikimedia.org/wiki/File:Bowl_of_Terra_Chips.jpg","license":"CC BY 2.0","artist":"Jay Cross"},"trail":{"src":"https://thumb.wikimedia.org/wikipedia/commons/thumb/2/26/Trail_Mix.JPG/500px-Trail_Mix.JPG?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail","page":"https://commons.wikimedia.org/wiki/File:Trail_Mix.JPG","license":"CC BY-SA 3.0","artist":"Papathanasiouk"},"edamame":{"src":"https://thumb.wikimedia.org/wikipedia/commons/thumb/8/87/Edamame_on_a_bamboo_bowl_by_yomi955.jpg/500px-Edamame_on_a_bamboo_bowl_by_yomi955.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail","page":"https://commons.wikimedia.org/wiki/File:Edamame_on_a_bamboo_bowl_by_yomi955.jpg","license":"CC BY 2.0","artist":"yomi955"},"banana":{"src":"https://thumb.wikimedia.org/wikipedia/commons/thumb/9/98/Bananas_on_black_background_02.jpg/500px-Bananas_on_black_background_02.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail","page":"https://commons.wikimedia.org/wiki/File:Bananas_on_black_background_02.jpg","license":"CC BY-SA 4.0","artist":"Krzysztof Golik"},"yogurt":{"src":"https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b3/Muesli%2C_Fresh_Fruit%2C_Honey_%26_Yogurt_%289646801012%29.jpg/500px-Muesli%2C_Fresh_Fruit%2C_Honey_%26_Yogurt_%289646801012%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail","page":"https://commons.wikimedia.org/wiki/File:Muesli,_Fresh_Fruit,_Honey_%26_Yogurt_(9646801012).jpg","license":"CC BY 2.0","artist":"LeonardKong"},"avocado":{"src":"https://thumb.wikimedia.org/wikipedia/commons/thumb/4/4a/Avocado_toast.jpg/500px-Avocado_toast.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail","page":"https://commons.wikimedia.org/wiki/File:Avocado_toast.jpg","license":"CC BY-SA 4.0","artist":"Pequeño mar"},"quinoa":{"src":"https://thumb.wikimedia.org/wikipedia/commons/thumb/d/dc/Quinoa_Salad_%285045982815%29.jpg/500px-Quinoa_Salad_%285045982815%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail","page":"https://commons.wikimedia.org/wiki/File:Quinoa_Salad_(5045982815).jpg","license":"CC BY 2.0","artist":"Geoff Peters from Vancouver, BC, Canada"},"salmon":{"src":"https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f1/Grilled_plated_salmon_fillet.jpg/500px-Grilled_plated_salmon_fillet.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail","page":"https://commons.wikimedia.org/wiki/File:Grilled_plated_salmon_fillet.jpg","license":"CC0","artist":"DanaTentis"},"jacket":{"src":"https://thumb.wikimedia.org/wikipedia/commons/thumb/0/05/Jacket_Potato_%28Chicken_Mayo_Crispy_Bacon%29_-_Dyke_Road_Park_Cafe.jpg/500px-Jacket_Potato_%28Chicken_Mayo_Crispy_Bacon%29_-_Dyke_Road_Park_Cafe.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail","page":"https://commons.wikimedia.org/wiki/File:Jacket_Potato_(Chicken_Mayo_Crispy_Bacon)_-_Dyke_Road_Park_Cafe.jpg","license":"CC0","artist":"Andy Li"},"apple-pb":{"src":"https://thumb.wikimedia.org/wikipedia/commons/thumb/3/34/Velvet_apple_%28sliced%29.jpg/500px-Velvet_apple_%28sliced%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail","page":"https://commons.wikimedia.org/wiki/File:Velvet_apple_(sliced).jpg","license":"CC BY-SA 4.0","artist":"Salil Kumar Mukherjee"},"boiled-eggs":{"src":"https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a4/Boiled_Egg_-_Crossection.jpg/500px-Boiled_Egg_-_Crossection.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail","page":"https://commons.wikimedia.org/wiki/File:Boiled_Egg_-_Crossection.jpg","license":"CC BY-SA 2.0","artist":"Ramesh NG"},"pbj":{"src":"https://thumb.wikimedia.org/wikipedia/commons/thumb/4/49/Peanut_Butter_and_Jelly_Sandwich.jpg/500px-Peanut_Butter_and_Jelly_Sandwich.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail","page":"https://commons.wikimedia.org/wiki/File:Peanut_Butter_and_Jelly_Sandwich.jpg","license":"CC BY-SA 4.0","artist":"JefferyGoldman"},"fruit":{"src":"https://thumb.wikimedia.org/wikipedia/commons/thumb/8/82/Fruit_salad_in_tezpur_university.jpg/500px-Fruit_salad_in_tezpur_university.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail","page":"https://commons.wikimedia.org/wiki/File:Fruit_salad_in_tezpur_university.jpg","license":"CC BY-SA 4.0","artist":"Akashdoley13"},"hero":{"src":"https://thumb.wikimedia.org/wikipedia/commons/thumb/9/93/Fruits_and_Vegetables_in_Boquete%2C_Panama.jpg/500px-Fruits_and_Vegetables_in_Boquete%2C_Panama.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail","page":"https://commons.wikimedia.org/wiki/File:Fruits_and_Vegetables_in_Boquete,_Panama.jpg","license":"CC BY-SA 4.0","artist":"FranHogan"},"smoothie":{"src":"https://thumb.wikimedia.org/wikipedia/commons/thumb/4/47/Fruit_smoothie.jpg/500px-Fruit_smoothie.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail","page":"https://commons.wikimedia.org/wiki/File:Fruit_smoothie.jpg","license":"CC BY-SA 3.0","artist":"Tiia Monto"},"risotto":{"src":"https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9e/Mushroom_Risotto_%284789418371%29.jpg/500px-Mushroom_Risotto_%284789418371%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail","page":"https://commons.wikimedia.org/wiki/File:Mushroom_Risotto_(4789418371).jpg","license":"CC BY-SA 2.0","artist":"Katrin Gilger"},"lasagne":{"src":"https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f4/Eggplant_Lasagna_%28Vegitarian%29_%281_of_6%29.jpg/500px-Eggplant_Lasagna_%28Vegitarian%29_%281_of_6%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail","page":"https://commons.wikimedia.org/wiki/File:Eggplant_Lasagna_(Vegitarian)_(1_of_6).jpg","license":"CC BY 2.0","artist":"Wheeler Cowperthwaite"},"shakshuka":{"src":"https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e3/Shakshuka_Dish.jpg/500px-Shakshuka_Dish.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail","page":"https://commons.wikimedia.org/wiki/File:Shakshuka_Dish.jpg","license":"CC BY 4.0","artist":"Junbinhuang"},"bean-chili":{"src":"https://thumb.wikimedia.org/wikipedia/commons/thumb/f/fa/Chilli_sine_carne_Zur_Tanne_Harsdorf.jpg/500px-Chilli_sine_carne_Zur_Tanne_Harsdorf.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail","page":"https://commons.wikimedia.org/wiki/File:Chilli_sine_carne_Zur_Tanne_Harsdorf.jpg","license":"CC BY-SA 4.0","artist":"Benreis"},"grits":{"src":"https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b4/Shrimp_%26_Grits_-_Saut%C3%A9ed_shrimp_with_mushrooms%2C_scallions_%26_bacon_served_over_cheese_grits.jpg/500px-Shrimp_%26_Grits_-_Saut%C3%A9ed_shrimp_with_mushrooms%2C_scallions_%26_bacon_served_over_cheese_grits.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail","page":"https://commons.wikimedia.org/wiki/File:Shrimp_%26_Grits_-_Saut%C3%A9ed_shrimp_with_mushrooms,_scallions_%26_bacon_served_over_cheese_grits.jpg","license":"CC BY 2.0","artist":"City Foodsters"},"ackee":{"src":"https://thumb.wikimedia.org/wikipedia/commons/thumb/7/71/Ackee-saltfish.jpg/500px-Ackee-saltfish.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail","page":"https://commons.wikimedia.org/wiki/File:Ackee-saltfish.jpg","license":"CC BY 2.0","artist":"Dug Song from Ann Arbor, MI, USA"},"akara":{"src":"https://thumb.wikimedia.org/wikipedia/commons/thumb/5/53/Fried_Bean_cake.jpg/500px-Fried_Bean_cake.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail","page":"https://commons.wikimedia.org/wiki/File:Fried_Bean_cake.jpg","license":"CC BY-SA 4.0","artist":"Zmu'az4Z"},"koko":{"src":"https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f7/Hausa_koko_1.png/500px-Hausa_koko_1.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail","page":"https://commons.wikimedia.org/wiki/File:Hausa_koko_1.png","license":"CC BY-SA 4.0","artist":"Issac Gyamfi"},"cornmeal-porridge":{"src":"https://thumb.wikimedia.org/wikipedia/commons/thumb/8/84/Ka%C3%A7amak_i_shpis%C3%AB.jpg/500px-Ka%C3%A7amak_i_shpis%C3%AB.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail","page":"https://commons.wikimedia.org/wiki/File:Ka%C3%A7amak_i_shpis%C3%AB.jpg","license":"CC BY-SA 4.0","artist":"Berishasinan"},"chapati":{"src":"https://thumb.wikimedia.org/wikipedia/commons/thumb/9/91/Chapati-1.jpg/500px-Chapati-1.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail","page":"https://commons.wikimedia.org/wiki/File:Chapati-1.jpg","license":"CC0","artist":"safaritravelplus"},"ful":{"src":"https://thumb.wikimedia.org/wikipedia/commons/thumb/f/fb/Foul_Mdammis%2C_Tunisie.jpg/500px-Foul_Mdammis%2C_Tunisie.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail","page":"https://commons.wikimedia.org/wiki/File:Foul_Mdammis,_Tunisie.jpg","license":"CC BY-SA 3.0","artist":"Habib M'henni"},"jollof":{"src":"https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ec/Jollof_rice_with_boiled_egg_and_fried_chicken.jpg/500px-Jollof_rice_with_boiled_egg_and_fried_chicken.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail","page":"https://commons.wikimedia.org/wiki/File:Jollof_rice_with_boiled_egg_and_fried_chicken.jpg","license":"CC BY-SA 4.0","artist":"daSupremo"},"red-beans":{"src":"https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f4/DMACs_Monday_Red_Beans_and_Rice_New_Orleans_June_2018.jpg/500px-DMACs_Monday_Red_Beans_and_Rice_New_Orleans_June_2018.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail","page":"https://commons.wikimedia.org/wiki/File:DMACs_Monday_Red_Beans_and_Rice_New_Orleans_June_2018.jpg","license":"CC BY-SA 4.0","artist":"Infrogmation of New Orleans"},"groundnut-soup":{"src":"https://thumb.wikimedia.org/wikipedia/commons/thumb/5/53/Fufu_in_groundnut_soup_with_fish.jpg/500px-Fufu_in_groundnut_soup_with_fish.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail","page":"https://commons.wikimedia.org/wiki/File:Fufu_in_groundnut_soup_with_fish.jpg","license":"CC BY 2.0","artist":"aripeskoe2"},"patty":{"src":"https://upload.wikimedia.org/wikipedia/commons/6/6c/05_Jamaican_Beef_Patty_-_Sybil%27s_Bakery_%284349822967%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled","page":"https://commons.wikimedia.org/wiki/File:05_Jamaican_Beef_Patty_-_Sybil%27s_Bakery_(4349822967).jpg","license":"CC BY-SA 2.0","artist":"Jason Lam"},"doubles":{"src":"https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3b/FOOD_Doubles_2.jpg/500px-FOOD_Doubles_2.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail","page":"https://commons.wikimedia.org/wiki/File:FOOD_Doubles_2.jpg","license":"CC BY-SA 4.0","artist":"Grueslayer"},"collards":{"src":"https://thumb.wikimedia.org/wikipedia/commons/thumb/b/bb/Soul_Food_Dinner.jpg/500px-Soul_Food_Dinner.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail","page":"https://commons.wikimedia.org/wiki/File:Soul_Food_Dinner.jpg","license":"CC BY-SA 2.0","artist":"Clancy Ratliff from St. Paul, MN, U.S."},"bep-salad":{"src":"https://thumb.wikimedia.org/wikipedia/commons/thumb/5/54/JazzyBlackEyedPeaSalad-0927.jpg/500px-JazzyBlackEyedPeaSalad-0927.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail","page":"https://commons.wikimedia.org/wiki/File:JazzyBlackEyedPeaSalad-0927.jpg","license":"CC BY 2.0","artist":"DC Central Kitchen"},"misir":{"src":"https://thumb.wikimedia.org/wikipedia/commons/thumb/f/fc/Misir_Wot_and_Gomen_Besiga_-_Abyssinia%2C_Brighton.jpg/500px-Misir_Wot_and_Gomen_Besiga_-_Abyssinia%2C_Brighton.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail","page":"https://commons.wikimedia.org/wiki/File:Misir_Wot_and_Gomen_Besiga_-_Abyssinia,_Brighton.jpg","license":"CC0","artist":"Andy Li"},"sukuma":{"src":"https://thumb.wikimedia.org/wikipedia/commons/thumb/4/48/Ugali_%26_Sukuma_Wiki.jpg/500px-Ugali_%26_Sukuma_Wiki.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail","page":"https://commons.wikimedia.org/wiki/File:Ugali_%26_Sukuma_Wiki.jpg","license":"CC BY 2.0","artist":"Paresh Jai from Nairobi, Kenya"},"jerk":{"src":"https://thumb.wikimedia.org/wikipedia/commons/thumb/1/19/Jerk_chicken_plate.jpg/500px-Jerk_chicken_plate.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail","page":"https://commons.wikimedia.org/wiki/File:Jerk_chicken_plate.jpg","license":"CC BY-SA 2.0","artist":"stu_spivack"},"curry-goat":{"src":"https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9f/Curry_Goat_and_Rice.jpg/500px-Curry_Goat_and_Rice.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail","page":"https://commons.wikimedia.org/wiki/File:Curry_Goat_and_Rice.jpg","license":"CC BY 2.0","artist":"Leon Brocard from London, UK"},"oven-chicken":{"src":"https://thumb.wikimedia.org/wikipedia/commons/thumb/b/bb/Soul_Food_Dinner.jpg/500px-Soul_Food_Dinner.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail","page":"https://commons.wikimedia.org/wiki/File:Soul_Food_Dinner.jpg","license":"CC BY-SA 2.0","artist":"Clancy Ratliff from St. Paul, MN, U.S."},"smothered":{"src":"https://thumb.wikimedia.org/wikipedia/commons/thumb/4/4b/Chicken_Fried_Steak.jpg/500px-Chicken_Fried_Steak.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail","page":"https://commons.wikimedia.org/wiki/File:Chicken_Fried_Steak.jpg","license":"CC BY-SA 4.0","artist":"LeeMNichols"},"catfish":{"src":"https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a2/Fried_catfish_at_Nubian_Queen_Lolas.jpg/500px-Fried_catfish_at_Nubian_Queen_Lolas.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail","page":"https://commons.wikimedia.org/wiki/File:Fried_catfish_at_Nubian_Queen_Lolas.jpg","license":"CC BY-SA 2.0","artist":"Kent Wang"},"gumbo":{"src":"https://thumb.wikimedia.org/wikipedia/commons/thumb/c/cb/Gumbo_-_8831284354.jpg/500px-Gumbo_-_8831284354.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail","page":"https://commons.wikimedia.org/wiki/File:Gumbo_-_8831284354.jpg","license":"CC BY 2.0","artist":"William Andrus"},"egusi":{"src":"https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3a/Egusi_soup_with_pounded_yam_and_assorted_meats.jpg/500px-Egusi_soup_with_pounded_yam_and_assorted_meats.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail","page":"https://commons.wikimedia.org/wiki/File:Egusi_soup_with_pounded_yam_and_assorted_meats.jpg","license":"CC BY-SA 4.0","artist":"Onyenachi64"},"doro":{"src":"https://thumb.wikimedia.org/wikipedia/commons/thumb/5/54/Ethiopian_wat.jpg/500px-Ethiopian_wat.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail","page":"https://commons.wikimedia.org/wiki/File:Ethiopian_wat.jpg","license":"CC BY-SA 2.0","artist":"stu_spivack"},"oxtail":{"src":"https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b0/Slow_Cooker_Oxtail_Stew_with_mashed_potato_and_brussels_sprouts_-_05_01_2020_%2849335421817%29.png/500px-Slow_Cooker_Oxtail_Stew_with_mashed_potato_and_brussels_sprouts_-_05_01_2020_%2849335421817%29.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail","page":"https://commons.wikimedia.org/wiki/File:Slow_Cooker_Oxtail_Stew_with_mashed_potato_and_brussels_sprouts_-_05_01_2020_(49335421817).png","license":"CC BY 2.0","artist":"CharmaineZoe's Marvelous Melange from England"},"mafe":{"src":"https://thumb.wikimedia.org/wikipedia/commons/thumb/0/01/Groundnut_Stew%28_Abom_%29.jpg/500px-Groundnut_Stew%28_Abom_%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail","page":"https://commons.wikimedia.org/wiki/File:Groundnut_Stew(_Abom_).jpg","license":"CC BY-SA 4.0","artist":"Luchywally"},"shiro":{"src":"https://thumb.wikimedia.org/wikipedia/commons/thumb/2/22/Fastenessen_fasting_meal.JPG/500px-Fastenessen_fasting_meal.JPG?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail","page":"https://commons.wikimedia.org/wiki/File:Fastenessen_fasting_meal.JPG","license":"CC BY-SA 3.0","artist":"Florian Fell"},"plantain":{"src":"https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9a/African_Fried_Rice_with_Fried_Plantain_and_Beef.jpg/500px-African_Fried_Rice_with_Fried_Plantain_and_Beef.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail","page":"https://commons.wikimedia.org/wiki/File:African_Fried_Rice_with_Fried_Plantain_and_Beef.jpg","license":"CC BY-SA 4.0","artist":"Globalgab"},"sweet-potato":{"src":"https://thumb.wikimedia.org/wikipedia/commons/thumb/5/51/Baked_potato%2C_baked_sweet_potato%2C_and_steamed_kale.jpg/500px-Baked_potato%2C_baked_sweet_potato%2C_and_steamed_kale.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail","page":"https://commons.wikimedia.org/wiki/File:Baked_potato,_baked_sweet_potato,_and_steamed_kale.jpg","license":"CC BY-SA 4.0","artist":"User:O'Dea"},"peanuts":{"src":"https://thumb.wikimedia.org/wikipedia/commons/thumb/6/64/Boiled_big_peanuts_%26_normal_peanuts%2C_Katori_City%2C_Japan.jpg/500px-Boiled_big_peanuts_%26_normal_peanuts%2C_Katori_City%2C_Japan.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail","page":"https://commons.wikimedia.org/wiki/File:Boiled_big_peanuts_%26_normal_peanuts,_Katori_City,_Japan.jpg","license":"CC BY 3.0","artist":"katorisi"},"mandazi":{"src":"https://thumb.wikimedia.org/wikipedia/commons/thumb/6/69/Bowl_of_mandazi.jpg/500px-Bowl_of_mandazi.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail","page":"https://commons.wikimedia.org/wiki/File:Bowl_of_mandazi.jpg","license":"CC BY 2.0","artist":"The original uploader was ChildofMidnight at English Wikipedia."},"red-red":{"src":"https://thumb.wikimedia.org/wikipedia/commons/thumb/4/4b/Fried_ripe_plantain_and_beans_stew.jpg/500px-Fried_ripe_plantain_and_beans_stew.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail","page":"https://commons.wikimedia.org/wiki/File:Fried_ripe_plantain_and_beans_stew.jpg","license":"CC BY-SA 4.0","artist":"Maame1Yaa"},"chin-chin":{"src":"https://thumb.wikimedia.org/wikipedia/commons/thumb/0/01/A_fried_chin_chin.jpg/500px-A_fried_chin_chin.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail","page":"https://commons.wikimedia.org/wiki/File:A_fried_chin_chin.jpg","license":"CC BY-SA 4.0","artist":"Linason Blessing"}};
+// cost in cents per serving so totals never drift
+const FOODS = [
+  ['oats', 'Oats & berries', 'b', 350, 12, 14, 120, ['gluten']],
+  ['eggs', 'Eggs on toast', 'b', 420, 24, 3, 150, ['gluten', 'egg']],
+  ['yogurt', 'Yogurt, fruit & honey', 'b', 300, 20, 22, 180, ['dairy']],
+  ['smoothie', 'Banana peanut smoothie', 'b', 450, 18, 30, 160, ['nuts', 'dairy']],
+  ['tofu', 'Tofu scramble', 'b', 320, 22, 2, 140, ['soy']],
+  ['pancakes', 'Pancakes & syrup', 'b', 600, 10, 45, 100, ['gluten', 'egg', 'dairy']],
+  ['chia', 'Chia pudding', 'b', 280, 9, 8, 170, []],
+  ['avocado', 'Avocado toast & egg', 'b', 380, 14, 2, 190, ['gluten', 'egg']],
+  ['toast-jam', 'Toast & marmalade', 'b', 300, 6, 18, 40, ['gluten']],
+  ['chicken-salad', 'Chicken salad', 'l', 480, 38, 6, 350, ['meat']],
+  ['lentil-soup', 'Lentil soup', 'l', 400, 22, 6, 130, []],
+  ['tuna-wrap', 'Tuna wrap', 'l', 520, 32, 4, 260, ['gluten', 'fish']],
+  ['burger', 'Cheeseburger & fries', 'l', 950, 35, 10, 400, ['gluten', 'dairy', 'meat']],
+  ['quinoa', 'Quinoa salad', 'l', 500, 18, 8, 280, []],
+  ['pbj', 'Peanut butter & jam toast', 'l', 480, 16, 20, 90, ['gluten', 'nuts']],
+  ['sushi', 'Salmon sushi', 'l', 550, 26, 9, 500, ['fish', 'soy']],
+  ['burrito', 'Bean burrito', 'l', 600, 22, 5, 180, ['gluten', 'dairy']],
+  ['jacket', 'Jacket potato & salad', 'l', 520, 18, 10, 120, []],
+  ['cheese-toast', 'Cheese on toast', 'l', 450, 20, 4, 110, ['gluten', 'dairy']],
+  ['salmon', 'Grilled salmon & greens', 'd', 650, 42, 3, 550, ['fish']],
+  ['stir-fry', 'Vegetable stir-fry', 'd', 560, 28, 10, 240, ['soy']],
+  ['pasta', 'Spaghetti bolognese', 'd', 750, 34, 12, 260, ['gluten', 'meat']],
+  ['chili', 'Chili con carne', 'd', 600, 45, 8, 290, ['meat']],
+  ['pizza', 'Margherita pizza', 'd', 1100, 40, 14, 800, ['gluten', 'dairy']],
+  ['curry', 'Chickpea curry & rice', 'd', 620, 20, 9, 170, []],
+  ['steak', 'Steak & potatoes', 'd', 800, 55, 4, 700, ['meat']],
+  ['satay', 'Curry noodle soup', 'd', 700, 40, 16, 340, ['nuts', 'gluten', 'soy', 'meat']],
+  ['roast', 'Roast chicken dinner', 'd', 720, 50, 8, 420, ['meat']],
+  ['fish-pie', 'Fish pie & peas', 'd', 640, 36, 6, 380, ['fish', 'dairy']],
+  ['risotto', 'Mushroom risotto', 'd', 620, 16, 5, 260, ['dairy']],
+  ['lasagne', 'Vegetable lasagne', 'd', 680, 28, 12, 280, ['gluten', 'dairy']],
+  ['shakshuka', 'Shakshuka', 'd', 450, 24, 12, 180, ['egg']],
+  ['bean-chili', 'Three-bean chili', 'd', 560, 26, 9, 190, []],
+  ['apple-pb', 'Apple & peanut butter', 's', 250, 7, 19, 80, ['nuts']],
+  ['hummus', 'Hummus & vegetables', 's', 200, 6, 4, 100, []],
+  ['bar', 'Protein bar', 's', 220, 20, 6, 150, ['dairy', 'soy']],
+  ['crisps', 'Crisps', 's', 400, 4, 40, 120, []],
+  ['boiled-eggs', 'Boiled eggs', 's', 160, 13, 1, 60, ['egg']],
+  ['trail', 'Trail mix', 's', 300, 8, 14, 110, ['nuts']],
+  ['edamame', 'Edamame', 's', 190, 17, 3, 120, ['soy']],
+  ['banana', 'Banana', 's', 105, 1, 14, 30, []],
+  ['fruit', 'Fruit salad', 's', 120, 1, 22, 140, []],
+  // soul food, Caribbean, West and East African dishes
+  ['grits', 'Cheese grits & eggs', 'b', 480, 22, 3, 160, ['dairy', 'egg'], 'soul'],
+  ['ackee', 'Ackee & saltfish', 'b', 420, 28, 3, 320, ['fish'], 'caribbean'],
+  ['akara', 'Akara (bean fritters)', 'b', 350, 15, 2, 90, [], 'west'],
+  ['koko', 'Hausa koko & groundnuts', 'b', 320, 9, 12, 70, ['nuts'], 'west'],
+  ['cornmeal-porridge', 'Cornmeal porridge', 'b', 330, 8, 18, 70, ['dairy'], 'caribbean'],
+  ['chapati', 'Chapati & spiced tea', 'b', 380, 9, 14, 80, ['gluten', 'dairy'], 'east'],
+  ['ful', 'Ful medames & egg', 'b', 420, 24, 3, 110, ['egg'], 'east'],
+  ['jollof', 'Jollof rice & chicken', 'l', 650, 35, 8, 280, ['meat'], 'west'],
+  ['red-beans', 'Red beans & rice', 'l', 520, 20, 4, 140, ['meat'], 'soul'],
+  ['groundnut-soup', 'Groundnut soup', 'l', 540, 28, 8, 230, ['nuts', 'meat'], 'west'],
+  ['patty', 'Jamaican beef patty', 'l', 450, 15, 3, 200, ['gluten', 'meat'], 'caribbean'],
+  ['doubles', 'Doubles (curried chickpeas)', 'l', 420, 13, 4, 120, ['gluten'], 'caribbean'],
+  ['collards', 'Collard greens & cornbread', 'l', 430, 13, 8, 130, ['gluten', 'dairy', 'egg'], 'soul'],
+  ['bep-salad', 'Black-eyed pea salad', 'l', 380, 16, 5, 130, [], 'soul'],
+  ['misir', 'Misir wat & injera', 'l', 480, 22, 6, 170, ['gluten'], 'east'],
+  ['sukuma', 'Sukuma wiki & ugali', 'l', 450, 12, 4, 90, [], 'east'],
+  ['jerk', 'Jerk chicken, rice & peas', 'd', 720, 48, 6, 380, ['meat'], 'caribbean'],
+  ['curry-goat', 'Curry goat & rice', 'd', 760, 45, 5, 520, ['meat'], 'caribbean'],
+  ['oven-chicken', 'Oven-fried chicken & greens', 'd', 680, 50, 4, 360, ['meat', 'gluten'], 'soul'],
+  ['smothered', 'Smothered chicken & rice', 'd', 700, 45, 3, 320, ['meat', 'gluten'], 'soul'],
+  ['catfish', 'Cornmeal catfish & sides', 'd', 640, 40, 4, 420, ['fish'], 'soul'],
+  ['gumbo', 'Chicken & shrimp gumbo', 'd', 600, 38, 5, 400, ['meat', 'fish', 'gluten'], 'soul'],
+  ['egusi', 'Egusi soup & fufu', 'd', 750, 35, 4, 360, ['meat', 'fish'], 'west'],
+  ['doro', 'Doro wat & injera', 'd', 680, 45, 6, 400, ['meat', 'egg', 'gluten'], 'east'],
+  ['oxtail', 'Oxtail stew & mash', 'd', 820, 45, 5, 650, ['meat', 'dairy'], 'caribbean'],
+  ['mafe', 'Mafé (peanut stew) & rice', 'd', 680, 30, 10, 260, ['nuts', 'meat'], 'west'],
+  ['red-red', 'Red red (beans & plantain)', 'd', 600, 20, 12, 140, [], 'west'],
+  ['shiro', 'Shiro & injera', 'd', 520, 22, 4, 160, ['gluten'], 'east'],
+  ['plantain', 'Fried plantain', 's', 250, 2, 18, 60, [], 'west'],
+  ['sweet-potato', 'Baked sweet potato', 's', 180, 4, 9, 50, [], 'soul'],
+  ['chin-chin', 'Chin chin', 's', 300, 5, 12, 60, ['gluten', 'egg', 'dairy'], 'west'],
+  ['peanuts', 'Boiled peanuts', 's', 230, 10, 2, 70, ['nuts'], 'soul'],
+  ['mandazi', 'Mandazi', 's', 280, 5, 10, 50, ['gluten', 'dairy'], 'east'],
+].map(([id, name, slot, kcal, protein, sugar, cost, tags, cuisine = 'everyday']) => ({ id, name, slot, kcal, protein, sugar, cost, tags, cuisine, img: PHOTOS[id]?.src }));
+const CUISINES = [['soul', 'Soul food'], ['caribbean', 'Caribbean'], ['west', 'West African'], ['east', 'East African'], ['everyday', 'Everyday']];
+const cuisineName = c => CUISINES.find(x => x[0] === c)?.[1] || 'My meal';
+const DEFAULT_GOALS = { kcal: 2000, protein: 80, sugar: 50, budget: 30000, people: 1, currency: '$', diet: 'all', avoid: [], slots: ['b', 'l', 'd', 's'], weekStart: 1, favs: [], cuisines: ['soul', 'caribbean', 'west', 'east'] };
+const loved = (f, g) => f.custom || (g.cuisines || []).includes(f.cuisine);
+
+let ALL = FOODS, byId = {};
+function useFoods(extra = []) { ALL = [...FOODS, ...extra]; byId = Object.fromEntries(ALL.map(f => [f.id, f])); }
+useFoods();
+
+// keeps only well-formed custom meals (they come from storage or a backup file)
+function cleanCustom(list) {
+  if (!Array.isArray(list)) return [];
+  const num = (v, max) => Number.isFinite(v) && v >= 0 && v <= max;
+  return list.filter(f => f && /^c-\d{1,16}$/.test(f.id) && typeof f.name === 'string' && f.name.trim() && f.name.length <= 40
+    && SLOTS.some(s => s[0] === f.slot) && num(f.kcal, 3000) && num(f.protein, 300) && num(f.sugar, 300) && num(f.cost, 20000)
+    && Array.isArray(f.tags) && f.tags.every(t => TAGS.includes(t)))
+    .map(({ id, name, slot, kcal, protein, sugar, cost, tags }) => ({ id, name: name.trim(), slot, kcal, protein, sugar, cost, tags, custom: true }));
+}
+
+const daysIn = (y, m) => new Date(y, m + 1, 0).getDate();
+const firstWeekday = (y, m, weekStart = 1) => (new Date(y, m, 1).getDay() - weekStart + 7) % 7;
+const blocked = g => new Set([...(g.avoid || []), ...(DIETS[g.diet] || [])]);
+const allowed = (f, g, b = blocked(g)) => !f.tags.some(t => b.has(t));
+const activeSlots = g => SLOTS.filter(([k]) => (g.slots || []).includes(k));
+
+function dayTotals(day = {}) {
+  const t = { kcal: 0, protein: 0, sugar: 0, cost: 0 };
+  for (const [k, id] of Object.entries(day)) {
+    const f = byId[id];
+    if (f && k.length === 1) { t.kcal += f.kcal; t.protein += f.protein; t.sugar += f.sugar; t.cost += f.cost; }
+  }
+  return t;
+}
+
+// plain-language verdicts for one day (per person)
+function dayReport(t, g) {
+  if (!t.kcal) return null;
+  const r = t.kcal / g.kcal;
+  const kcal = { ok: Math.abs(r - 1) <= 0.1, word: r < 0.8 ? 'Too low' : r < 0.9 ? 'A little low' : r <= 1.1 ? 'Just right' : r <= 1.2 ? 'A little high' : 'Too high' };
+  const protein = { ok: t.protein >= g.protein, word: t.protein >= g.protein ? 'Good' : 'A little low' };
+  const sugar = { ok: t.sugar <= g.sugar, word: t.sugar <= g.sugar ? 'Good' : 'Too much' };
+  return { kcal, protein, sugar, good: kcal.ok && protein.ok && sugar.ok };
+}
+
+// fills empty planned slots: goals first, then the per-person day budget, then meals used least; favourites get a nudge
+function fillDay(day, g, dayBudget, used = {}) {
+  const b = blocked(g), favs = new Set(g.favs || []);
+  const empty = activeSlots(g).map(([k]) => k).filter(k => !byId[day[k]]);
+  const all = empty.map(k => ALL.filter(f => f.slot === k && allowed(f, g, b))).filter(o => o.length);
+  if (!all.length) return day;
+  const base = dayTotals(day);
+  // score: goals in 10% bands first, then fewest meals outside loved cuisines, then budget, then variety
+  function search(opts) {
+    const picked = [];
+    let best = null, bestScore = Infinity;
+    const pen = f => (used[f.id] || 0) ** 2 / 4 - (favs.has(f.id) ? 1.5 : 0) + (loved(f, g) ? 0 : 1e3); // squared: each repeat costs more
+    (function walk(i, kcal, protein, sugar, cost, acc) {
+      if (acc - 1.5 * (opts.length - i) >= bestScore) return; // can't beat the best day found so far
+      if (i === opts.length) {
+        const miss = Math.max(0, Math.abs(kcal - g.kcal) / g.kcal - 0.1) + Math.max(0, g.protein - protein) / (g.protein || 1)
+          + Math.max(0, sugar - g.sugar) / (g.sugar || 1);
+        const score = Math.ceil(miss * 10) * 1e6 + Math.max(0, cost - dayBudget) / Math.max(1, dayBudget) * 60 + acc;
+        if (score < bestScore) { bestScore = score; best = [...picked]; }
+        return;
+      }
+      for (const f of opts[i]) { picked[i] = f; walk(i + 1, kcal + f.kcal, protein + f.protein, sugar + f.sugar, cost + f.cost, acc + pen(f)); }
+    })(0, base.kcal, base.protein, base.sugar, base.cost, 0);
+    return { best, bestScore };
+  }
+  // loved cuisines only first (fast); widen to every allowed meal only when that misses the goals
+  const pref = all.map(o => o.filter(f => loved(f, g)));
+  let r = pref.every(o => o.length) ? search(pref) : null;
+  if (!r || r.bestScore >= 1e6) { const wide = search(all); if (!r || wide.bestScore < r.bestScore) r = wide; }
+  const out = { ...day };
+  for (const f of r.best) out[f.slot] = f.id;
+  return out;
+}
+
+// fills every empty slot in a month of n days, spreading what's left of the per-person budget over the days left
+function fillMonth(plan, g, n) {
+  const out = structuredClone(plan), used = {}, budget = g.budget / (g.people || 1);
+  for (const day of Object.values(out)) for (const id of Object.values(day)) if (byId[id]) used[id] = (used[id] || 0) + 1;
+  for (let d = 1; d <= n; d++) {
+    const before = out[d] || {}, others = shoppingList(out).total - dayTotals(before).cost;
+    out[d] = fillDay(before, g, (budget - others) / (n - d + 1), used);
+    for (const k in out[d]) if (out[d][k] !== before[k]) used[out[d][k]] = (used[out[d][k]] || 0) + 1;
+  }
+  return out;
+}
+
+// servings and cost for the given days (default all) and household size
+function shoppingList(plan, people = 1, days = null) {
+  const counts = {};
+  for (const [d, day] of Object.entries(plan)) {
+    if (days && !days.includes(+d)) continue;
+    for (const id of Object.values(day)) if (byId[id]) counts[id] = (counts[id] || 0) + 1;
+  }
+  const items = ALL.filter(f => counts[f.id]).map(f => ({ food: f, n: counts[f.id] * people, cost: counts[f.id] * f.cost * people }));
+  return { items, total: items.reduce((a, i) => a + i.cost, 0) };
+}
+
+{ // self-check
+  const g = DEFAULT_GOALS;
+  const r = dayReport(dayTotals({ b: 'eggs', l: 'chicken-salad', d: 'chili', s: 'hummus' }), g);
+  console.assert(!r.kcal.ok && r.kcal.word === 'A little low' && r.protein.ok && r.sugar.ok && !r.good, 'day report');
+  console.assert(dayReport(dayTotals(), g) === null, 'empty day');
+  const list = shoppingList({ 1: { b: 'oats' }, 2: { b: 'oats', d: 'curry', s: 'gone' } }, 2);
+  console.assert(list.items.length === 2 && list.items[0].n === 4 && list.total === 820, 'shopping list x people');
+  console.assert(shoppingList({ 1: { b: 'oats' }, 9: { b: 'oats' } }, 1, [1, 2, 3]).total === 120, 'shopping list by week');
+  console.assert(daysIn(2024, 1) === 29 && firstWeekday(2026, 10) === 6 && firstWeekday(2026, 10, 0) === 0, 'calendar');
+  const g2 = { ...g, avoid: ['gluten', 'nuts'] }, filled = fillDay({}, g2, 1200);
+  console.assert(Object.keys(filled).length === 4 && Object.values(filled).every(id => allowed(byId[id], g2)), 'fill respects allergies');
+  console.assert(dayReport(dayTotals(filled), g2).good, 'fill hits goals');
+  console.assert(fillDay({ b: 'pancakes' }, g, 900).b === 'pancakes', 'fill keeps chosen meals');
+  const veg = fillDay({}, { ...g, diet: 'vegetarian', slots: ['b', 'l', 'd'] }, 1500);
+  console.assert(!('s' in veg) && Object.values(veg).every(id => !byId[id].tags.some(t => t === 'meat' || t === 'fish')), 'fill respects diet and slots');
+  const month = fillMonth({ 5: { d: 'pizza' } }, g, 30), days = Object.values(month);
+  const most = Math.max(...shoppingList(month).items.map(i => i.n));
+  console.assert(days.length === 30 && month[5].d === 'pizza' && shoppingList(month).total <= g.budget && most <= 8
+    && days.every(d => dayReport(dayTotals(d), g).good || d.d === 'pizza'), 'fill month: in budget, varied');
+  console.assert(days.every(d => Object.entries(d).every(([k, id]) => (k === 'd' && id === 'pizza') || loved(byId[id], g))), 'fill month uses loved cuisines');
+  const every = fillMonth({}, { ...g, cuisines: CUISINES.map(c => c[0]) }, 30);
+  console.assert(Object.values(every).flatMap(Object.values).some(id => byId[id].cuisine === 'everyday'), 'all cuisines can be picked');
+  console.assert(cleanCustom([{ id: 'c-1', name: '<b>x</b>', slot: 'd', kcal: 1, protein: 1, sugar: 1, cost: 1, tags: [] }, { id: 'bad"', name: 'y' }]).length === 1, 'custom meal validation');
+}
+</script>
+
+<script>
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const load = (k, fallback) => { try { const v = JSON.parse(localStorage.getItem(k)); return v && typeof v === 'object' ? v : fallback; } catch { return fallback; } };
+const save = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} };
+const pad2 = n => String(n).padStart(2, '0');
+const iso = d => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+const addDays = (d, n) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
+const fmt = (d, o) => d.toLocaleDateString(undefined, o);
+const longDate = d => fmt(d, { weekday: 'long', day: 'numeric', month: 'long' });
+const monthName = (y, m) => fmt(new Date(y, m, 1), { month: 'long', year: 'numeric' });
+const sameDay = (a, b) => iso(a) === iso(b);
+const slotName = k => SLOTS.find(s => s[0] === k)[1];
+const ic = (name, cls = '') => `<i data-lucide="${name}" class="ic ${cls}" aria-hidden="true"></i>`;
+const img = (f, cls = '') => f?.img ? `<img src="${f.img}" alt="" loading="lazy" class="${cls}">` : `<span class="${cls} noimg" style="display:grid;place-items:center;background:var(--soft);color:var(--green)">${ic('utensils')}</span>`;
+const icons = () => window.lucide?.createIcons({ attrs: { 'aria-hidden': 'true' } });
+
+const today = new Date();
+const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+function loadGoals() {
+  const s = load('plate-goals', null) || {};
+  const g = { ...DEFAULT_GOALS, ...s };
+  for (const k of ['kcal', 'protein', 'sugar', 'budget', 'people']) if (!Number.isFinite(g[k]) || g[k] < 0) g[k] = DEFAULT_GOALS[k];
+  for (const k of ['avoid', 'slots', 'favs', 'cuisines']) if (!Array.isArray(g[k])) g[k] = DEFAULT_GOALS[k];
+  if (!DIETS[g.diet]) g.diet = 'all';
+  if (!['$', '£', '€'].includes(g.currency)) g.currency = '$';
+  g.weekStart = g.weekStart === 0 ? 0 : 1;
+  if (!g.slots.length) g.slots = DEFAULT_GOALS.slots;
+  g.cuisines = g.cuisines.filter(c => CUISINES.some(x => x[0] === c));
+  if (!g.cuisines.length) g.cuisines = CUISINES.map(c => c[0]);
+  return g;
+}
+let goals = loadGoals();
+useFoods(cleanCustom(load('plate-custom', [])));
+const money = c => goals.currency + (c / 100).toFixed(2);
+let ym = { y: today.getFullYear(), m: today.getMonth() };
+let cur = startOfToday, view = 'home', choosing = null, chooserFilter = 'all', chooserCuisine = 'all';
+
+const plans = {};
+const planKey = (y, m) => `plate-plan-${y}-${pad2(m + 1)}`;
+const getPlan = (y, m) => plans[planKey(y, m)] ||= load(planKey(y, m), {});
+const savePlan = (y, m) => save(planKey(y, m), getPlan(y, m));
+const dayOf = d => getPlan(d.getFullYear(), d.getMonth())[d.getDate()] || {};
+const filled = day => activeSlots(goals).filter(([k]) => byId[day[k]]).length;
+const isFav = id => goals.favs.includes(id);
+
+// every plan change goes through here so it is saved and can be undone
+function changeMonth(y, m, msg, fn) {
+  const before = JSON.stringify(getPlan(y, m));
+  fn(getPlan(y, m));
+  for (const [d, day] of Object.entries(getPlan(y, m))) if (!Object.keys(day).length) delete getPlan(y, m)[d];
+  savePlan(y, m);
+  render();
+  toast(msg, () => { plans[planKey(y, m)] = JSON.parse(before); savePlan(y, m); render(); toast('Undone.'); });
+}
+
+let toastTimer, toastUndo;
+function toast(msg, undo) {
+  $('#toast-msg').textContent = msg;
+  toastUndo = undo;
+  $('#toast-undo').hidden = !undo;
+  $('#toast').hidden = !msg;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { $('#toast').hidden = true; }, 10000);
+}
+
+// ---------- routing ----------
+const VIEWS = ['home', 'dash', 'month', 'day', 'shop', 'settings', 'credits'];
+function route() {
+  const [v, arg] = location.hash.slice(1).split('/');
+  view = VIEWS.includes(v) ? v : 'home';
+  if (view === 'day') {
+    const [y, m, d] = (arg || '').split('-').map(Number);
+    const date = new Date(y, m - 1, d);
+    cur = isNaN(date) ? startOfToday : date;
+    ym = { y: cur.getFullYear(), m: cur.getMonth() };
+  }
+  for (const id of VIEWS) $('#' + id).hidden = id !== view;
+  const navView = view === 'day' ? 'month' : view;
+  $$('nav a').forEach(a => a.hash === '#' + navView ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current'));
+  if ($('#chooser').open) $('#chooser').close();
+  render();
+  window.scrollTo(0, 0);
+  $(`#${view} h1`)?.focus({ preventScroll: true });
+}
+function render() {
+  ({ home: renderHome, dash: renderDash, month: renderMonth, day: renderDay, shop: renderShop, settings: renderSettings, credits: renderCredits })[view]?.();
+  icons();
+}
+
+// ---------- landing ----------
+function renderHome() {
+  $('#hero-img').src = PHOTOS.hero?.src || '';
+  const card = (id, label) => { const f = byId[id]; return `${img(f)}<div><small class="muted">${label}</small><b>${esc(f.name)}</b>${f.kcal} calories</div>`; };
+  $('#float-a').innerHTML = card('jerk', 'Dinner');
+  $('#float-b').innerHTML = card('grits', 'Breakfast');
+  $('#sample').innerHTML = [['akara', 'b'], ['jollof', 'l'], ['oxtail', 'd'], ['plantain', 's']].map(([id, k]) => {
+    const f = byId[id];
+    return `<figure>${img(f)}<figcaption>${esc(f.name)}<small>${slotName(k)} · ${f.kcal} calories</small></figcaption></figure>`;
+  }).join('');
+}
+
+// ---------- dashboard ----------
+function monthStats(y, m) {
+  const plan = getPlan(y, m), n = daysIn(y, m), slotsN = activeSlots(goals).length;
+  let meals = 0, good = 0, planned = 0, sum = { kcal: 0, protein: 0, sugar: 0 };
+  const days = [];
+  for (let d = 1; d <= n; d++) {
+    const day = plan[d] || {}, t = dayTotals(day), r = dayReport(t, goals), c = filled(day);
+    meals += c;
+    if (t.kcal) { planned++; sum.kcal += t.kcal; sum.protein += t.protein; sum.sugar += t.sugar; }
+    if (c === slotsN && r?.good) good++;
+    days.push({ d, day, t, r, c });
+  }
+  const { total, items } = shoppingList(plan, goals.people);
+  return { plan, n, slotsN, meals, good, planned, sum, days, total, items };
+}
+
+function renderDash() {
+  const { y, m } = ym, s = monthStats(y, m);
+  const h = today.getHours();
+  $('#dash-date').textContent = fmt(today, { weekday: 'long', day: 'numeric', month: 'long' });
+  $('#dash-title').textContent = h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening';
+  $('#dash-month').textContent = monthName(y, m);
+  const pct = (a, b) => b ? Math.min(100, a / b * 100) : 0;
+  const tile = (icon, label, big, sub, p, over) => `<div class="stat"><div class="label">${ic(icon)}${label}</div><div class="big">${big} <small>${sub}</small></div>${p == null ? '' : `<div class="bar" aria-hidden="true"><i class="${over ? 'over' : ''}" style="width:${p}%"></i></div>`}</div>`;
+  const avg = s.planned ? Math.round(s.sum.kcal / s.planned) : 0;
+  $('#stats').innerHTML = tile('utensils', 'Meals planned', s.meals, `of ${s.n * s.slotsN}`, pct(s.meals, s.n * s.slotsN))
+    + tile('circle-check', 'Days on target', s.good, `of ${s.n} days`, pct(s.good, s.n))
+    + tile('wallet', 'Spending', money(s.total), `of ${money(goals.budget)}`, pct(s.total, goals.budget), s.total > goals.budget)
+    + tile('flame', 'Average calories', avg.toLocaleString(), `goal ${goals.kcal.toLocaleString()}`, null);
+
+  // today (or the 1st, when looking at another month)
+  const focus = ym.y === today.getFullYear() && ym.m === today.getMonth() ? startOfToday : new Date(y, m, 1);
+  const fday = dayOf(focus), fr = dayReport(dayTotals(fday), goals);
+  $('#today-card').innerHTML = `<h2>${ic('sun')}${sameDay(focus, today) ? "Today's meals" : longDate(focus)}</h2>
+    <div class="today-meals">${activeSlots(goals).map(([k, label]) => {
+      const f = byId[fday[k]];
+      return `<a href="#day/${iso(focus)}">${f ? img(f, 'ph') : `<span class="ph">${ic('plus')}</span>`}<small>${label}</small><span>${f ? esc(f.name) : 'Not chosen yet'}</span></a>`;
+    }).join('')}</div>
+    <div class="btn-row" style="margin-top:16px"><a class="btn primary" href="#day/${iso(focus)}">${ic('pencil')}Open this day</a>
+    ${fr ? `<span class="${fr.good ? '' : 'pill'}" style="align-self:center">${fr.good ? `${ic('circle-check', 'ok')} On target` : `${ic('triangle-alert')} Needs a look`}</span>` : ''}</div>`;
+
+  // calories chart: one bar per day, dashed goal line
+  const max = Math.max(goals.kcal * 1.3, ...s.days.map(d => d.t.kcal)), W = s.n * 10, H = 100, yv = v => H - v / max * H;
+  const bars = s.days.map(({ d, t }) => {
+    const x = (d - 1) * 10 + 2, top = yv(t.kcal);
+    const shape = t.kcal ? `<path d="M${x},${H} V${top + 2} Q${x},${top} ${x + 2},${top} H${x + 4} Q${x + 6},${top} ${x + 6},${top + 2} V${H} Z" fill="var(--green)"/>` : '';
+    return `<a href="#day/${iso(new Date(y, m, d))}" data-d="${d}" aria-label="${longDate(new Date(y, m, d))}: ${t.kcal ? t.kcal + ' calories' : 'nothing planned'}"><rect class="hit" x="${(d - 1) * 10}" y="0" width="10" height="${H}"/>${shape}</a>`;
+  }).join('');
+  const gy = yv(goals.kcal) / H * 100;
+  $('#kcal-chart').innerHTML = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="group" aria-label="Calories per day">
+      <line x1="0" x2="${W}" y1="${H}" y2="${H}" stroke="var(--line)" vector-effect="non-scaling-stroke"/>${bars}
+      <line x1="0" x2="${W}" y1="${yv(goals.kcal)}" y2="${yv(goals.kcal)}" stroke="var(--ink)" stroke-dasharray="5 4" vector-effect="non-scaling-stroke" pointer-events="none"/></svg>
+    <span class="gl" style="top:calc(${gy}% * (174 / 200))">Goal ${goals.kcal.toLocaleString()}</span>
+    ${[1, 5, 10, 15, 20, 25, s.n].map(d => `<span class="xl" style="left:${(d - 0.5) / s.n * 100}%">${d}</span>`).join('')}
+    <div class="tip" hidden></div>`;
+  $('#kcal-table').innerHTML = `<table><thead><tr><th>Day</th><th>Calories</th><th>Protein</th><th>Sugar</th></tr></thead><tbody>${s.days.filter(d => d.t.kcal).map(({ d, t }) =>
+    `<tr><td>${fmt(new Date(y, m, d), { weekday: 'short', day: 'numeric' })}</td><td>${t.kcal.toLocaleString()}</td><td>${t.protein}g</td><td>${t.sugar}g</td></tr>`).join('') || '<tr><td colspan="4">Nothing planned yet.</td></tr>'}</tbody></table>`;
+
+  // spending by week
+  const weeks = [1, 2, 3, 4, 5].map(w => { const ds = s.days.map(x => x.d).filter(d => Math.ceil(d / 7) === w); return { w, ds, cost: shoppingList(s.plan, goals.people, ds).total }; }).filter(w => w.ds.length);
+  const wmax = Math.max(1, ...weeks.map(w => w.cost));
+  $('#week-bars').innerHTML = weeks.map(w => `<div class="row"><span>Week ${w.w}</span><div class="track" title="${money(w.cost)}"><div class="fill" style="width:${w.cost / wmax * 100}%"></div></div><span class="val">${money(w.cost)}</span></div>`).join('')
+    + `<p class="muted">For ${goals.people} ${goals.people === 1 ? 'person' : 'people'}. Weekly budget is about ${money(goals.budget / s.n * 7)}.</p>`;
+
+  // averages
+  const av = k => s.planned ? Math.round(s.sum[k] / s.planned) : 0;
+  $('#averages').innerHTML = [['Calories', av('kcal'), goals.kcal, '', 'target'], ['Protein', av('protein'), goals.protein, 'g', 'min'], ['Sugar', av('sugar'), goals.sugar, 'g', 'max']].map(([n, v, g, u, kind]) => {
+    const ok = kind === 'min' ? v >= g : kind === 'max' ? v <= g : Math.abs(v / g - 1) <= 0.1;
+    return `<div><div class="top"><span>${n}</span><span>${v.toLocaleString()}${u} <span class="muted">/ ${g.toLocaleString()}${u}</span></span></div>
+      <div class="bar" aria-hidden="true"><i class="${s.planned && !ok ? 'over' : ''}" style="width:${pct(v, g)}%"></i></div></div>`;
+  }).join('') + (s.planned ? '' : '<p class="muted">Plan some meals to see your averages.</p>');
+
+  // days to look at
+  const issues = s.days.filter(x => x.c && (x.c < s.slotsN || !x.r?.good)).slice(0, 6).map(x => {
+    const why = x.c < s.slotsN ? `${s.slotsN - x.c} meal${s.slotsN - x.c > 1 ? 's' : ''} not chosen` : [!x.r.kcal.ok && `calories ${x.r.kcal.word.toLowerCase()}`, !x.r.protein.ok && 'protein a little low', !x.r.sugar.ok && 'too much sugar'].filter(Boolean).join(', ');
+    const date = new Date(y, m, x.d);
+    return `<li><a href="#day/${iso(date)}"><span class="pill">${ic('triangle-alert')}</span><span class="grow"><b>${longDate(date)}</b><small>${why}</small></span>${ic('chevron-right')}</a></li>`;
+  });
+  const empty = s.days.filter(x => !x.c).length;
+  $('#attention').innerHTML = issues.join('') + (empty ? `<li><span class="grow"><b>${empty} day${empty > 1 ? 's' : ''} with nothing planned</b><small>Fill them in one go from your month.</small></span><a class="btn quiet" href="#month">Open</a></li>` : '')
+    || `<li>${ic('circle-check', 'ok')}<span class="grow">Every day this month is on target. Well done!</span></li>`;
+
+  const top = [...s.items].sort((a, b) => b.n - a.n).slice(0, 5);
+  $('#top-meals').innerHTML = top.length ? top.map(i => `<li>${img(i.food)}<span class="grow"><b>${esc(i.food.name)}</b><small>${slotName(i.food.slot)}</small></span><span class="count">${i.n / goals.people}×</span></li>`).join('')
+    : '<li class="muted">No meals planned yet.</li>';
+}
+
+// tooltip for the calories chart
+function chartTip(e) {
+  const a = e.target.closest?.('#kcal-chart a'), tip = $('#kcal-chart .tip');
+  if (!tip) return;
+  if (!a) { tip.hidden = true; return; }
+  const d = +a.dataset.d, t = dayTotals(getPlan(ym.y, ym.m)[d] || {}), r = dayReport(t, goals);
+  const box = $('#kcal-chart').getBoundingClientRect(), bar = a.getBoundingClientRect();
+  tip.innerHTML = `<b>${fmt(new Date(ym.y, ym.m, d), { weekday: 'short', day: 'numeric', month: 'short' })}</b>${t.kcal ? `${t.kcal.toLocaleString()} calories · ${r.kcal.word}` : 'Nothing planned'}`;
+  tip.style.left = Math.min(box.width - 80, Math.max(80, bar.left - box.left + bar.width / 2)) + 'px';
+  tip.style.top = (bar.top - box.top + (t.kcal ? (1 - t.kcal / Math.max(goals.kcal * 1.3, t.kcal)) * bar.height : bar.height) - 8) + 'px';
+  tip.hidden = false;
+}
+
+// ---------- month ----------
+function renderMonth() {
+  const { y, m } = ym, s = monthStats(y, m), ws = goals.weekStart;
+  $('#month-title').textContent = monthName(y, m);
+  const names = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  let html = names.map((_, i) => `<div class="wd" aria-hidden="true">${names[(i + ws) % 7]}</div>`).join('') + '<div class="pad"></div>'.repeat(firstWeekday(y, m, ws));
+  for (const { d, day, r, c } of s.days) {
+    const date = new Date(y, m, d), good = c === s.slotsN && r?.good;
+    const status = !c ? 'Nothing planned' : good ? 'On target' : c === s.slotsN ? 'Planned' : `${c} of ${s.slotsN} meals`;
+    const thumbs = activeSlots(goals).map(([k]) => byId[day[k]]?.img ? `<img src="${byId[day[k]].img}" alt="" loading="lazy">` : '<i></i>').join('');
+    const names = activeSlots(goals).map(([k, l]) => byId[day[k]] ? `<li>${l}: ${esc(byId[day[k]].name)}</li>` : '').join('');
+    html += `<a class="tile${sameDay(date, today) ? ' today' : ''}${good ? ' good' : ''}" href="#day/${iso(date)}" aria-label="${longDate(date)}${sameDay(date, today) ? ' (today)' : ''}: ${status}">
+      <span class="top"><span class="num">${d}</span>${good ? ic('circle-check', 'ok') : ''}</span><span class="wdname">${fmt(date, { weekday: 'long' })}</span>
+      <span class="thumbs" aria-hidden="true">${thumbs}</span><ul class="print-names">${names}</ul><span class="status">${status}</span></a>`;
+  }
+  $('#calendar').innerHTML = html;
+  $('#month-summary').innerHTML = `<span>${ic('utensils')}<b>${s.meals}</b> of ${s.n * s.slotsN} meals planned</span>
+    <span>${ic('circle-check')}<b>${s.good}</b> days on target</span>
+    <span>${ic('wallet')}<b>${money(s.total)}</b> of ${money(goals.budget)}${s.total > goals.budget ? ` <span class="warn-text">(${money(s.total - goals.budget)} over)</span>` : ''}</span>`;
+}
+
+// ---------- day ----------
+function renderDay() {
+  const day = dayOf(cur), b = blocked(goals);
+  $('#day-eyebrow').textContent = sameDay(cur, today) ? 'Today' : fmt(cur, { year: 'numeric' });
+  $('#day-title').textContent = longDate(cur);
+  $('#meals').innerHTML = activeSlots(goals).map(([k, label]) => {
+    const f = byId[day[k]];
+    if (!f) return `<div class="meal-row empty"><span class="ph">${ic('plus')}</span>
+      <div><div class="slot-label">${label}</div><div class="name muted">Not chosen yet</div></div>
+      <div class="actions"><button type="button" class="btn primary" data-choose="${k}">Choose ${label.toLowerCase()}</button></div></div>`;
+    const bad = f.tags.filter(t => b.has(t));
+    return `<div class="meal-row${bad.length ? ' conflict' : ''}">${img(f, 'ph')}
+      <div><div class="slot-label">${label} · ${cuisineName(f.cuisine)}</div><div class="name">${esc(f.name)}</div>
+      <div class="facts">${f.kcal} cal · ${f.protein}g protein · ${f.sugar}g sugar · ${money(f.cost)}</div>
+      ${bad.length ? `<div class="warn-text">${ic('triangle-alert')} Contains ${bad.join(' and ')}, which you avoid</div>` : ''}</div>
+      <div class="actions"><button type="button" class="btn icon fav" data-fav="${f.id}" aria-pressed="${isFav(f.id)}" aria-label="Favourite ${esc(f.name)}">${ic('heart')}</button>
+      <button type="button" class="btn" data-choose="${k}" aria-label="Change ${label.toLowerCase()}">Change</button>
+      <button type="button" class="btn quiet" data-remove="${k}" aria-label="Remove ${label.toLowerCase()}">Remove</button></div></div>`;
+  }).join('');
+  const t = dayTotals(day), r = dayReport(t, goals);
+  $('#day-report').innerHTML = !r ? '<p class="muted">Choose some meals and we\'ll tell you how the day looks.</p>'
+    : `<ul class="report">${[
+      ['flame', 'Calories', `${t.kcal.toLocaleString()} of ${goals.kcal.toLocaleString()}`, r.kcal],
+      ['dumbbell', 'Protein', `${t.protein}g of ${goals.protein}g`, r.protein],
+      ['candy', 'Sugar', `${t.sugar}g, limit ${goals.sugar}g`, r.sugar],
+    ].map(([i, n, v, x]) => `<li class="${x.ok ? '' : 'bad'}">${ic(i)}<span><b>${n}</b><br><span class="muted">${v}</span></span><span class="word">${x.word}</span></li>`).join('')}</ul>
+      <p style="margin-top:12px">Cost: <b>${money(t.cost * goals.people)}</b>${goals.people > 1 ? ` for ${goals.people} people` : ''}</p>`;
+  $('#day-note').value = load(noteKey(cur), {})[cur.getDate()] || '';
+}
+const noteKey = d => `plate-notes-${d.getFullYear()}-${pad2(d.getMonth() + 1)}`;
+
+// ---------- chooser ----------
+const FILTERS = [['all', 'All'], ['fav', 'Favourites'], ['protein', 'High protein'], ['sugar', 'Low sugar'], ['light', 'Light'], ['budget', 'Budget'], ['mine', 'My meals']];
+function openChooser(k) {
+  choosing = k;
+  chooserFilter = 'all';
+  chooserCuisine = 'all';
+  $('#chooser-title').textContent = `Choose ${slotName(k).toLowerCase()} · ${longDate(cur)}`;
+  $('#search').value = '';
+  $('#filters').innerHTML = FILTERS.map(([id, l]) => `<button type="button" class="chip-btn" data-filter="${id}">${l}</button>`).join('')
+    + '<span style="flex-basis:100%"></span>' + [['all', 'All cuisines'], ...CUISINES].map(([c, l]) => `<button type="button" class="chip-btn" data-cuisine="${c}">${l}</button>`).join('')
+    + `<select id="sort" aria-label="Sort meals"><option value="fav">Favourites and loved cuisines first</option><option value="name">Name A–Z</option><option value="kcal">Fewest calories</option><option value="protein">Most protein</option><option value="cost">Cheapest</option></select>`;
+  renderChooser();
+  $('#chooser').showModal();
+  $('#chooser').scrollTop = 0;
+}
+function renderChooser() {
+  const q = $('#search').value.trim().toLowerCase(), b = blocked(goals);
+  const all = ALL.filter(f => f.slot === choosing), ok = all.filter(f => allowed(f, goals, b));
+  const test = { all: () => true, fav: f => isFav(f.id), protein: f => f.protein >= 25, sugar: f => f.sugar <= 5, light: f => f.kcal <= 350, budget: f => f.cost <= 150, mine: f => f.custom }[chooserFilter];
+  const sort = $('#sort')?.value || 'fav';
+  const cmp = { fav: (a, c) => isFav(c.id) - isFav(a.id) || loved(c, goals) - loved(a, goals) || a.name.localeCompare(c.name), name: (a, c) => a.name.localeCompare(c.name), kcal: (a, c) => a.kcal - c.kcal, protein: (a, c) => c.protein - a.protein, cost: (a, c) => a.cost - c.cost }[sort];
+  const shown = ok.filter(f => f.name.toLowerCase().includes(q) && test(f) && (chooserCuisine === 'all' || f.cuisine === chooserCuisine)).sort(cmp);
+  $$('#filters [data-cuisine]').forEach(x => x.setAttribute('aria-pressed', x.dataset.cuisine === chooserCuisine));
+  $$('#filters [data-filter]').forEach(x => x.setAttribute('aria-pressed', x.dataset.filter === chooserFilter));
+  $('#choices').innerHTML = shown.length ? shown.map(f => {
+    const badges = [cuisineName(f.cuisine), f.protein >= 25 && 'High protein', f.sugar <= 5 && 'Low sugar', f.kcal <= 350 && 'Light', f.cost <= 150 && 'Budget']
+      .filter(Boolean).map(x => `<span class="badge">${x}</span>`).join('');
+    return `<div class="choice"><button type="button" class="pick" data-food="${f.id}">${img(f, 'ph')}<span class="name">${esc(f.name)}</span>
+      <span class="facts">${f.kcal} cal · ${f.protein}g protein · ${money(f.cost)}</span><span class="badges">${badges}</span></button>
+      <button type="button" class="btn fav" data-fav="${f.id}" aria-pressed="${isFav(f.id)}" aria-label="Favourite ${esc(f.name)}">${ic('heart')}</button></div>`;
+  }).join('') : `<p class="muted">No meals match. Try another word or press "All".</p>`;
+  const hidden = all.length - ok.length;
+  $('#chooser-note').textContent = hidden ? `${hidden} meal${hidden > 1 ? 's are' : ' is'} hidden because of how you eat or foods you avoid.` : '';
+  icons();
+}
+function toggleFav(id) {
+  goals.favs = isFav(id) ? goals.favs.filter(x => x !== id) : [...goals.favs, id];
+  save('plate-goals', goals);
+  toast(isFav(id) ? `${byId[id].name} added to favourites.` : `${byId[id].name} removed from favourites.`);
+}
+
+// ---------- shopping ----------
+function shopDays() {
+  const v = $('#shop-range').value, n = daysIn(ym.y, ym.m);
+  if (v === 'month') return null;
+  return Array.from({ length: n }, (_, i) => i + 1).filter(d => Math.ceil(d / 7) === +v);
+}
+function renderShop() {
+  const { y, m } = ym, { items, total } = shoppingList(getPlan(y, m), goals.people, shopDays());
+  const checked = load(`plate-shop-${y}-${pad2(m + 1)}`, {});
+  $('#shop-eyebrow').textContent = monthName(y, m) + ($('#shop-range').value === 'month' ? '' : ' · ' + $('#shop-range').selectedOptions[0].text);
+  $('#shop-list').innerHTML = items.length ? activeSlots(goals).concat(SLOTS.filter(s => !goals.slots.includes(s[0]))).map(([k, label]) => {
+    const group = items.filter(i => i.food.slot === k);
+    return group.length ? `<h2 class="shop-group">${label}</h2><ul class="shop-list">${group.map(i => `<li><label class="check">
+      <input type="checkbox" data-food="${i.food.id}"${checked[i.food.id] ? ' checked' : ''}>${img(i.food)}
+      <span class="name">${esc(i.food.name)}<span class="qty">${i.n} serving${i.n > 1 ? 's' : ''}</span></span><span class="cost">${money(i.cost)}</span></label></li>`).join('')}</ul>` : '';
+  }).join('') : `<p class="card">Nothing to buy yet. <a href="#month">Plan some meals</a> and your list will appear here.</p>`;
+  const left = items.filter(i => !checked[i.food.id]).length;
+  $('#shop-total').hidden = !items.length;
+  $('#shop-total').innerHTML = `Total <b>${money(total)}</b> · ${left ? `${left} item${left > 1 ? 's' : ''} left to get` : 'All done!'}`;
+}
+
+// ---------- settings ----------
+const PRESETS = [['Stay as I am', 2000, 80, 50], ['Lose weight gently', 1700, 90, 35], ['Build strength', 2400, 120, 50], ['Lower sugar', 1900, 85, 25]];
+const STEPS = { kcal: [50, 800, 6000], protein: [5, 0, 400], sugar: [5, 0, 300], people: [1, 1, 12], budget: [10, 0, 10000] };
+function renderSettings() {
+  const f = $('#settings-form');
+  $$('.stepper[data-for]').forEach(el => {
+    const n = el.dataset.for, [step, min, max] = STEPS[n];
+    el.innerHTML = `<button type="button" class="btn quiet" data-step="${n}:-${step}" aria-label="Less">${ic('minus')}</button>
+      <input id="${n}" name="${n}" type="number" inputmode="numeric" min="${min}" max="${max}">
+      <button type="button" class="btn quiet" data-step="${n}:${step}" aria-label="More">${ic('plus')}</button>`;
+  });
+  f.kcal.value = goals.kcal; f.protein.value = goals.protein; f.sugar.value = goals.sugar; f.people.value = goals.people; f.budget.value = goals.budget / 100;
+  f.currency.value = goals.currency;
+  f.querySelector(`[name=weekStart][value="${goals.weekStart}"]`).checked = true;
+  $('#presets').innerHTML = PRESETS.map(([l, k, p, s], i) => `<button type="button" class="chip-btn" data-preset="${i}" aria-pressed="${goals.kcal === k && goals.protein === p && goals.sugar === s}">${l}</button>`).join('');
+  $('#diet').innerHTML = [['all', 'I eat everything'], ['pescatarian', 'Pescatarian'], ['vegetarian', 'Vegetarian'], ['vegan', 'Vegan']].map(([v, l]) =>
+    `<label class="opt"><input type="radio" name="diet" value="${v}"${goals.diet === v ? ' checked' : ''}>${l}</label>`).join('');
+  $('#vegan-note').hidden = goals.diet !== 'vegan';
+  $('#diet').onchange = e => { $('#vegan-note').hidden = e.target.value !== 'vegan'; };
+  $('#cuisines').innerHTML = CUISINES.map(([c, l]) => `<label class="opt"><input type="checkbox" name="cuisines" value="${c}"${goals.cuisines.includes(c) ? ' checked' : ''}>${l}</label>`).join('');
+  $('#avoid').innerHTML = ALLERGENS.map(([id, l]) => `<label class="opt avoid"><input type="checkbox" name="avoid" value="${id}"${goals.avoid.includes(id) ? ' checked' : ''}>${l}</label>`).join('');
+  $('#slots').innerHTML = SLOTS.map(([k, l]) => `<label class="opt"><input type="checkbox" name="slots" value="${k}"${goals.slots.includes(k) ? ' checked' : ''}>${l}</label>`).join('');
+  $('#welcome').hidden = !!load('plate-goals', null);
+  $('#settings-error').hidden = true;
+  $('#c-slot').innerHTML = SLOTS.map(([k, l]) => `<option value="${k}">${l}</option>`).join('');
+  $('#c-tags').innerHTML = TAGS.map(t => `<label class="opt"><input type="checkbox" value="${t}">${t === 'meat' ? 'Meat' : ALLERGENS.find(a => a[0] === t)[1]}</label>`).join('');
+  const mine = ALL.filter(x => x.custom);
+  $('#custom-list').innerHTML = mine.length ? mine.map(x => `<li>${ic('chef-hat')}<span class="grow"><b>${esc(x.name)}</b><br><span class="muted">${slotName(x.slot)} · ${x.kcal} cal · ${x.protein}g protein · ${money(x.cost)}</span></span>
+    <button type="button" class="btn quiet" data-del="${x.id}" aria-label="Delete ${esc(x.name)}">${ic('trash-2')}Delete</button></li>`).join('') : '<li class="muted">You haven\'t added any meals yet.</li>';
+}
+
+function renderCredits() {
+  $('#credits-table').innerHTML = '<thead><tr><th>Photo</th><th>Meal</th><th>By</th><th>License</th></tr></thead><tbody>'
+    + Object.entries(PHOTOS).map(([id, p]) => `<tr><td><img src="${p.src}" alt="" loading="lazy"></td><td><a href="${p.page}" target="_blank" rel="noopener">${esc(byId[id]?.name || 'Market stall (home page)')}</a></td><td>${esc(p.artist)}</td><td>${esc(p.license)}</td></tr>`).join('') + '</tbody>';
+}
+
+// ---------- events ----------
+$$('.start').forEach(b => b.onclick = () => { location.hash = load('plate-goals', null) ? '#dash' : '#settings'; });
+$('#see-how').onclick = () => $('#how').scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+
+const setBig = on => { document.documentElement.classList.toggle('big', on); $('#text-size').setAttribute('aria-pressed', on); $('#text-size span').textContent = on ? 'Smaller text' : 'Bigger text'; };
+$('#text-size').onclick = () => { const on = !document.documentElement.classList.contains('big'); setBig(on); save('plate-big', { on }); };
+
+document.addEventListener('click', e => {
+  const mb = e.target.closest('[data-month]');
+  if (mb) { const d = new Date(ym.y, ym.m + +mb.dataset.month, 1); ym = { y: d.getFullYear(), m: d.getMonth() }; render(); }
+  const fav = e.target.closest('[data-fav]');
+  if (fav) { toggleFav(fav.dataset.fav); view === 'day' && renderDay(); $('#chooser').open && renderChooser(); icons(); }
+});
+$('#kcal-chart').addEventListener('pointerover', chartTip);
+$('#kcal-chart').addEventListener('focusin', chartTip);
+$('#kcal-chart').addEventListener('pointerleave', () => { const t = $('#kcal-chart .tip'); if (t) t.hidden = true; });
+
+$('#this-month').onclick = () => { ym = { y: today.getFullYear(), m: today.getMonth() }; render(); };
+$('#fill-month').onclick = () => {
+  const { y, m } = ym, count = () => Object.values(getPlan(y, m)).reduce((a, d) => a + filled(d), 0), before = count();
+  if (before === daysIn(y, m) * activeSlots(goals).length) return toast('Every meal this month is already chosen.');
+  changeMonth(y, m, '', plan => Object.assign(plan, fillMonth(plan, goals, daysIn(y, m))));
+  $('#toast-msg').textContent = `Done! We chose ${count() - before} meals. Tap any day to change them.`;
+};
+$('#print-month').onclick = () => window.print();
+$('#clear-month').onclick = () => {
+  if (!confirm('Remove every meal planned this month?')) return;
+  changeMonth(ym.y, ym.m, 'Month cleared.', plan => { for (const d in plan) delete plan[d]; });
+};
+
+$('#prev-day').onclick = () => { location.hash = '#day/' + iso(addDays(cur, -1)); };
+$('#next-day').onclick = () => { location.hash = '#day/' + iso(addDays(cur, 1)); };
+$('#meals').onclick = e => {
+  const choose = e.target.closest('[data-choose]'), remove = e.target.closest('[data-remove]');
+  if (choose) openChooser(choose.dataset.choose);
+  if (remove) {
+    const k = remove.dataset.remove, name = byId[dayOf(cur)[k]].name;
+    changeMonth(cur.getFullYear(), cur.getMonth(), `${name} removed.`, plan => { delete plan[cur.getDate()][k]; });
+  }
+};
+$('#fill-day').onclick = () => {
+  const y = cur.getFullYear(), m = cur.getMonth(), d = cur.getDate();
+  if (filled(dayOf(cur)) === activeSlots(goals).length) return toast('Every meal for this day is already chosen.');
+  changeMonth(y, m, 'Done! We filled the empty meals for this day.', plan => {
+    const used = Object.fromEntries(shoppingList(plan).items.map(i => [i.food.id, i.n]));
+    plan[d] = fillDay(plan[d] || {}, goals, goals.budget / goals.people / daysIn(y, m), used);
+  });
+};
+$('#copy-day').onclick = () => {
+  const src = dayOf(addDays(cur, -1)), d = cur.getDate();
+  const ks = activeSlots(goals).map(([k]) => k).filter(k => byId[src[k]] && !byId[dayOf(cur)[k]]);
+  if (!ks.length) return toast(Object.keys(src).length ? 'Nothing to copy. Those meals are already chosen.' : 'Yesterday has no meals to copy.');
+  changeMonth(cur.getFullYear(), cur.getMonth(), `Copied ${ks.length} meal${ks.length > 1 ? 's' : ''} from yesterday.`, plan => {
+    plan[d] ||= {};
+    for (const k of ks) plan[d][k] = src[k];
+  });
+};
+$('#day-note').oninput = e => {
+  const notes = load(noteKey(cur), {});
+  if (e.target.value.trim()) notes[cur.getDate()] = e.target.value.slice(0, 1000); else delete notes[cur.getDate()];
+  save(noteKey(cur), notes);
+};
+
+$('#search').oninput = renderChooser;
+$('#filters').onclick = e => {
+  const b = e.target.closest('[data-filter]'), c = e.target.closest('[data-cuisine]');
+  if (b) chooserFilter = b.dataset.filter;
+  if (c) chooserCuisine = c.dataset.cuisine;
+  if (b || c) renderChooser();
+};
+$('#filters').onchange = renderChooser;
+$('#chooser-close').onclick = () => $('#chooser').close();
+$('#chooser').onclose = () => { choosing = null; };
+$('#chooser').onclick = e => { if (e.target === $('#chooser')) $('#chooser').close(); }; // backdrop click
+$('#choices').onclick = e => {
+  const b = e.target.closest('[data-food]');
+  if (!b) return;
+  const f = byId[b.dataset.food], k = choosing, d = cur.getDate();
+  $('#chooser').close();
+  changeMonth(cur.getFullYear(), cur.getMonth(), `${f.name} added for ${slotName(k).toLowerCase()}.`, plan => { (plan[d] ||= {})[k] = f.id; });
+  $(`[data-choose="${k}"]`)?.focus();
+};
+
+$('#shop-range').onchange = renderShop;
+$('#shop-list').onchange = e => {
+  const key = `plate-shop-${ym.y}-${pad2(ym.m + 1)}`, checked = load(key, {});
+  checked[e.target.dataset.food] = e.target.checked;
+  save(key, checked);
+  renderShop(); icons();
+  $(`#shop-list [data-food="${e.target.dataset.food}"]`).focus();
+};
+$('#print').onclick = () => window.print();
+$('#untick').onclick = () => { save(`plate-shop-${ym.y}-${pad2(ym.m + 1)}`, {}); renderShop(); icons(); };
+
+$('#settings-form').onclick = e => {
+  const st = e.target.closest('[data-step]'), pr = e.target.closest('[data-preset]'), f = $('#settings-form');
+  if (st) {
+    const [name, step] = st.dataset.step.split(':'), input = f[name];
+    input.value = Math.max(+input.min, Math.min(+input.max, (+input.value || 0) + +step));
+  }
+  if (pr) {
+    const [, k, p, s] = PRESETS[pr.dataset.preset];
+    f.kcal.value = k; f.protein.value = p; f.sugar.value = s;
+    $$('[data-preset]').forEach(b => b.setAttribute('aria-pressed', b === pr));
+  }
+};
+$('#settings-form').onsubmit = e => {
+  e.preventDefault();
+  const f = e.target, err = msg => { $('#settings-error').textContent = msg; $('#settings-error').hidden = false; };
+  const bad = Object.keys(STEPS).find(n => f[n].value === '' || !f[n].checkValidity());
+  if (bad) { err(`Please check "${f[bad].closest('.field').querySelector('label').textContent}". Use a number between ${f[bad].min} and ${f[bad].max}.`); return f[bad].focus(); }
+  const slots = $$('#slots input:checked').map(i => i.value);
+  if (!slots.length) return err('Please tick at least one meal to plan.');
+  const cuisines = $$('#cuisines input:checked').map(i => i.value);
+  if (!cuisines.length) return err('Please tick at least one cuisine you love.');
+  goals = { ...goals, kcal: +f.kcal.value, protein: +f.protein.value, sugar: +f.sugar.value, people: +f.people.value, budget: Math.round(+f.budget.value * 100),
+    currency: f.currency.value, diet: f.querySelector('[name=diet]:checked')?.value || 'all', avoid: $$('#avoid input:checked').map(i => i.value), slots,
+    weekStart: +f.querySelector('[name=weekStart]:checked').value, cuisines };
+  save('plate-goals', goals);
+  location.hash = '#dash';
+  toast('Your settings are saved.');
+};
+$('#custom-form').onsubmit = e => {
+  e.preventDefault();
+  const v = id => $('#' + id), bad = ['c-name', 'c-kcal', 'c-protein', 'c-sugar', 'c-cost'].find(id => !v(id).value.trim() || !v(id).checkValidity());
+  if (bad) { $('#custom-error').textContent = `Please check "${v(bad).closest('.field').querySelector('label').textContent}".`; $('#custom-error').hidden = false; return v(bad).focus(); }
+  const meal = { id: 'c-' + Date.now(), name: v('c-name').value.trim(), slot: v('c-slot').value, kcal: +v('c-kcal').value, protein: +v('c-protein').value,
+    sugar: +v('c-sugar').value, cost: Math.round(+v('c-cost').value * 100), tags: $$('#c-tags input:checked').map(i => i.value) };
+  const list = cleanCustom([...ALL.filter(x => x.custom), meal]);
+  save('plate-custom', list);
+  useFoods(list);
+  e.target.reset();
+  $('#custom-error').hidden = true;
+  renderSettings(); icons();
+  toast(`${meal.name} added. You'll find it under "My meals" when choosing.`);
+};
+$('#custom-list').onclick = e => {
+  const b = e.target.closest('[data-del]');
+  if (!b || !confirm(`Delete ${byId[b.dataset.del].name}? Days that use it will show it as not chosen.`)) return;
+  const list = ALL.filter(x => x.custom && x.id !== b.dataset.del);
+  save('plate-custom', list);
+  useFoods(list);
+  renderSettings(); icons();
+};
+$('#backup').onclick = () => {
+  const data = {};
+  for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k.startsWith('plate-')) data[k] = localStorage.getItem(k); }
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([JSON.stringify({ app: 'plate-planner', version: 1, data }, null, 1)], { type: 'application/json' }));
+  a.download = `plate-planner-backup-${iso(today)}.json`;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+};
+$('#restore').onchange = async e => {
+  const file = e.target.files[0];
+  e.target.value = '';
+  if (!file) return;
+  try {
+    if (file.size > 2e6) throw new Error('too big');
+    const j = JSON.parse(await file.text());
+    if (j?.app !== 'plate-planner' || typeof j.data !== 'object') throw new Error('not ours');
+    const entries = Object.entries(j.data).filter(([k, v]) => /^plate-[a-z]+(-\d{4}-\d{2})?$/.test(k) && typeof v === 'string');
+    entries.forEach(([, v]) => JSON.parse(v)); // every value must be valid JSON
+    if (!confirm(`Restore this backup? It replaces the plans and settings in this browser.`)) return;
+    Object.keys(localStorage).filter(k => k.startsWith('plate-')).forEach(k => localStorage.removeItem(k));
+    entries.forEach(([k, v]) => localStorage.setItem(k, v));
+    location.hash = '#dash';
+    location.reload();
+  } catch { toast("That file isn't a Plate Planner backup."); }
+};
+$('#reset-all').onclick = () => {
+  if (!confirm('Delete all your plans, settings and meals from this browser? This cannot be undone.')) return;
+  Object.keys(localStorage).filter(k => k.startsWith('plate-')).forEach(k => localStorage.removeItem(k));
+  location.hash = '#home';
+  location.reload();
+};
+
+$('#toast-undo').onclick = () => { $('#toast').hidden = true; toastUndo?.(); };
+
+setBig(!!load('plate-big', {}).on);
+window.addEventListener('hashchange', route);
+window.addEventListener('load', icons);
+route();
+</script>
+</body>
+</html>
