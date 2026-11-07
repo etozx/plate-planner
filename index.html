@@ -57,7 +57,7 @@
   nav a[aria-current] { color: var(--green-dark); background: var(--sage); }
   #text-size { min-height: 42px; padding: 0 12px; font-size: .9rem; }
 
-  .view { padding: 32px 0 64px; animation: viewIn .25s ease-out; }
+  .view { padding: 32px 0 64px; }
   @keyframes viewIn { from { opacity: 0; transform: translateY(6px); } }
   .page-head { display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-end; justify-content: space-between; margin-bottom: 22px; }
   .eyebrow { font-weight: 700; color: var(--green); text-transform: uppercase; letter-spacing: .08em; font-size: .78rem; margin-bottom: 6px; }
@@ -116,12 +116,12 @@
   .today-meals small { display: block; color: var(--green); font-weight: 700; font-size: .75rem; text-transform: uppercase; letter-spacing: .06em; margin-top: 8px; }
   .today-meals span { font-weight: 600; line-height: 1.3; display: block; }
   .chart { position: relative; height: 200px; margin-top: 4px; }
-  .chart svg { position: absolute; inset: 0 0 26px 0; width: 100%; height: calc(100% - 26px); overflow: visible; }
+  .chart > svg { position: absolute; inset: 0 0 26px 0; width: 100%; height: calc(100% - 26px); overflow: visible; }
   .chart .xl { position: absolute; bottom: 0; transform: translateX(-50%); font-size: .8rem; color: var(--muted); }
   .chart .gl { position: absolute; right: 0; transform: translateY(-120%); font-size: .8rem; font-weight: 700; color: var(--muted); background: #fff; padding: 0 4px; }
-  .chart a rect.hit { fill: transparent; }
-  .chart a:hover path, .chart a:focus path { fill: var(--green-dark); }
-  .chart a:focus { outline: none; }
+  .chart > svg a rect.hit { fill: transparent; }
+  .chart > svg a:hover path, .chart > svg a:focus path { fill: var(--green-dark); }
+  .chart > svg a:focus { outline: none; }
   .tip { position: absolute; z-index: 2; pointer-events: none; background: var(--ink); color: #fff; padding: 8px 12px; border-radius: 8px; font-size: .85rem; white-space: nowrap; transform: translate(-50%, -100%); }
   .tip b { display: block; }
   .hbars { display: grid; gap: 12px; }
@@ -194,7 +194,6 @@
 
   /* Chooser */
   dialog { border: 0; border-radius: 18px; padding: 0; width: min(1000px, calc(100% - 24px)); max-height: calc(100vh - 24px); color: var(--ink); }
-  dialog[open] { animation: viewIn .2s ease-out; }
   dialog::backdrop { background: rgb(20 35 25 / .55); }
   .dlg-head { position: sticky; top: 0; z-index: 1; background: #fff; padding: 18px 20px 14px; border-bottom: 1px solid var(--line); display: grid; gap: 12px; }
   .dlg-head .row { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
@@ -205,7 +204,6 @@
   .filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
   .chip-btn { min-height: 40px; padding: 0 14px; border-radius: 99px; border: 1.5px solid var(--line); background: #fff; font-weight: 600; cursor: pointer; }
   .chip-btn[aria-pressed=true] { background: var(--green); color: #fff; border-color: var(--green); }
-  .filters select { min-height: 40px; border: 1.5px solid var(--line); border-radius: 10px; padding: 0 10px; margin-left: auto; background: #fff; }
   .choices { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 14px; padding: 20px; }
   .choice { position: relative; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; background: #fff; transition: border-color .15s, box-shadow .15s; }
   .choice:hover { border-color: var(--green); box-shadow: 0 6px 18px rgb(20 40 25 / .1); }
@@ -264,6 +262,97 @@
   footer { border-top: 1px solid var(--line); padding: 28px 0 36px; color: var(--muted); font-size: .92rem; }
   footer .wrap { display: flex; flex-wrap: wrap; gap: 8px 20px; justify-content: space-between; }
 
+  /* ---- motion: springy presses, cascade, grow/shrink ---- */
+  :root { --ease-out: cubic-bezier(.22, .8, .24, 1); --spring: cubic-bezier(.34, 1.7, .5, 1); }
+  .btn, .chip-btn, .opt, nav a, .choice .pick, .tile, .today-meals a {
+    transition: transform .42s var(--spring), background .15s, border-color .15s, box-shadow .2s, color .15s; }
+  .btn:hover, .chip-btn:hover { transform: translateY(-1px); }
+  .btn.primary:hover { box-shadow: 0 6px 16px rgb(47 107 63 / .28); }
+  .btn:active, .chip-btn:active, .opt:active, nav a:active, .choice .pick:active, .today-meals a:active { transform: scale(.94); transition-duration: .08s; }
+  .tile:hover { transform: translateY(-2px); }
+  .tile:active { transform: scale(.97); transition-duration: .08s; }
+  .fav[aria-pressed=true] svg { animation: heart .45s var(--spring); }
+  @keyframes heart { 0% { transform: scale(.6); } 60% { transform: scale(1.25); } }
+
+  .cascade { animation: rise .42s var(--ease-out) backwards; animation-delay: calc(var(--i, 0) * 45ms); }
+  @keyframes rise { from { opacity: 0; transform: translateY(12px) scale(.985); } }
+
+  dialog[open] { animation: grow-in .3s var(--ease-out); }
+  dialog[open]::backdrop { animation: fade-in .3s ease-out; }
+  dialog.closing { animation: shrink-out .2s ease-in forwards; }
+  dialog.closing::backdrop { animation: fade-out .2s ease-in forwards; }
+  #toast { animation: grow-in .32s var(--spring); }
+  #toast.leaving { animation: shrink-out .2s ease-in forwards; }
+  details.table[open] > div { animation: unfold .3s var(--ease-out); transform-origin: top; }
+  @keyframes grow-in { from { opacity: 0; transform: translateY(14px) scale(.94); } }
+  @keyframes shrink-out { to { opacity: 0; transform: translateY(10px) scale(.95); } }
+  @keyframes unfold { from { opacity: 0; transform: scaleY(.85); } }
+  @keyframes fade-in { from { opacity: 0; } }
+  @keyframes fade-out { to { opacity: 0; } }
+
+  header { view-transition-name: site-header; }
+  ::view-transition-old(root) { animation: fade-out .16s ease-in both; }
+  ::view-transition-new(root) { animation: fade-in .24s ease-out both; }
+
+  /* ---- skeleton + shimmer: only while something is really loading ---- */
+  .sk, img:not(.loaded) { background: linear-gradient(100deg, var(--soft) 30%, #fff 50%, var(--soft) 70%) 0 0 / 250% 100%; animation: shimmer 1.3s linear infinite; }
+  img.loaded { animation: fade-in .35s ease-out; }
+  @keyframes shimmer { from { background-position: 100% 0; } to { background-position: 0 0; } }
+  #boot { display: none; }
+  .booting main > :not(#boot), .booting footer { display: none !important; }
+  .booting #boot { display: grid; gap: 18px; padding: 32px 0 64px; }
+  .sk { border-radius: 12px; }
+  .sk-eyebrow { height: 14px; width: 18%; } .sk-title { height: 46px; width: 52%; }
+  .sk-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  .sk-card { height: 150px; } .sk-wide { height: 280px; }
+
+  /* ---- searchable dropdown (wraps a hidden native <select>) ---- */
+  .dd { position: relative; }
+  .filters .dd { flex: 1 1 210px; }
+  .page-head .dd { min-width: 230px; }
+  .dd-btn { display: flex; align-items: center; gap: 8px; width: 100%; min-height: 50px; padding: 0 12px 0 14px; border: 1.5px solid var(--line); border-radius: 10px;
+    background: #fff; font-weight: 600; text-align: left; cursor: pointer; transition: transform .42s var(--spring), border-color .15s, box-shadow .15s, background .15s; }
+  .dd-btn:hover { border-color: var(--green); }
+  .dd-btn:active { transform: scale(.97); transition-duration: .08s; }
+  .dd-btn[aria-expanded=true] { border-color: var(--green); box-shadow: 0 0 0 3px var(--sage); }
+  .dd-btn.has-value { background: var(--sage); border-color: var(--green); }
+  .dd-val { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .dd-val small { color: var(--muted); font-weight: 600; margin-right: 6px; font-size: .85em; }
+  .dd-chev { transition: transform .25s var(--ease-out); }
+  .dd-btn[aria-expanded=true] .dd-chev { transform: rotate(180deg); }
+  .dd-panel { position: absolute; z-index: 40; top: calc(100% + 6px); left: 0; width: max(100%, 290px); max-width: calc(100vw - 32px); display: grid; gap: 8px; padding: 10px;
+    background: #fff; border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 14px 40px rgb(20 40 25 / .18); transform-origin: top; animation: dd-in .22s var(--ease-out); }
+  .dd-panel.leaving { animation: dd-out .15s ease-in forwards; }
+  @keyframes dd-in { from { opacity: 0; transform: translateY(-6px) scale(.96); } }
+  @keyframes dd-out { to { opacity: 0; transform: translateY(-4px) scale(.97); } }
+  .dd-search { width: 100%; min-height: 46px; padding: 0 12px 0 42px; border: 1.5px solid var(--line); border-radius: 9px; }
+  .dd-search:focus { border-color: var(--green); outline: none; }
+  .dd-count { font-size: .82rem; padding: 0 4px; }
+  .dd-list { max-height: 270px; overflow-y: auto; display: grid; gap: 2px; }
+  .dd-opt { display: flex; align-items: center; gap: 10px; min-height: 46px; padding: 0 10px; border-radius: 8px; cursor: pointer; }
+  .dd-opt:hover, .dd-opt.active { background: var(--soft); }
+  .dd-opt.active { box-shadow: inset 0 0 0 2px var(--sage-line); }
+  .dd-opt[aria-selected=true] { font-weight: 700; color: var(--green-dark); }
+  .dd-box { display: grid; place-items: center; flex: none; width: 22px; height: 22px; border: 2px solid var(--sage-line); border-radius: 6px; transition: background .15s, transform .3s var(--spring); }
+  .dd-opt[aria-selected=true] .dd-box { background: var(--green); border-color: var(--green); transform: scale(1.06); }
+  .dd-opt[aria-selected=true] .dd-box::after { content: ""; width: 6px; height: 11px; border: solid #fff; border-width: 0 2.5px 2.5px 0; transform: translateY(-1px) rotate(45deg); }
+  .dd:not(.multi) .dd-opt[aria-selected=true]::after { content: "✓"; margin-left: auto; }
+  .dd-empty { padding: 18px 10px; text-align: center; color: var(--muted); }
+  .dd-foot { display: flex; gap: 8px; border-top: 1px solid var(--line); padding-top: 8px; }
+  .dd-foot .btn { flex: 1; min-height: 44px; }
+
+  /* ---- empty states ---- */
+  .empty-state { display: grid; justify-items: center; text-align: center; gap: 8px; padding: 36px 20px; border: 1.5px dashed var(--sage-line); border-radius: var(--radius); background: var(--soft); }
+  .empty-state .es-ic { display: grid; place-items: center; width: 64px; height: 64px; border-radius: 50%; background: #fff; color: var(--green); box-shadow: 0 4px 14px rgb(20 40 25 / .08); margin-bottom: 4px; }
+  .empty-state .es-ic .ic { width: 30px; height: 30px; }
+  .empty-state p { color: var(--muted); max-width: 30em; }
+  .empty-state .btn { margin-top: 8px; }
+  .empty-state.sm { padding: 22px 16px; }
+  .chart.is-empty { height: auto; }
+  .choices > .empty-state { grid-column: 1 / -1; }
+  .es-li { display: block !important; }
+  .custom-list li.es-li { border: 0; padding: 0; }
+
   @media (max-width: 980px) {
     .hero, .day-grid, .dash { grid-template-columns: 1fr; }
     .hero h1 { font-size: 2.3rem; }
@@ -285,6 +374,7 @@
     .float { display: none; }
     .sample, .today-meals { grid-template-columns: repeat(2, 1fr); }
     .stats { grid-template-columns: 1fr 1fr; gap: 10px; }
+    .sk-row { grid-template-columns: 1fr; }
     .stat { padding: 14px; }
     .stat .big { font-size: 1.5rem; }
     .month-nav { width: 100%; justify-content: space-between; }
@@ -303,7 +393,6 @@
     .meal-row .actions .btn:not(.fav) { flex: 1; }
     .check { grid-template-columns: auto auto minmax(0, 1fr); }
     .check .cost { grid-column: 3; }
-    .filters select { margin-left: 0; }
     .credits th:nth-child(4), .credits td:nth-child(4) { display: none; }
   }
   @media (prefers-reduced-motion: reduce) {
@@ -318,7 +407,7 @@
   }
 </style>
 </head>
-<body>
+<body class="booting">
 <header class="no-print">
   <div class="wrap">
     <a class="brand" href="#home"><span class="mark"><i data-lucide="leaf" class="ic"></i></span>Plate Planner</a>
@@ -333,7 +422,12 @@
   </div>
 </header>
 
-<main class="wrap">
+<main class="wrap" aria-busy="true">
+  <div id="boot" aria-hidden="true">
+    <div class="sk sk-eyebrow"></div><div class="sk sk-title"></div>
+    <div class="sk-row"><div class="sk sk-card"></div><div class="sk sk-card"></div><div class="sk sk-card"></div></div>
+    <div class="sk sk-wide"></div>
+  </div>
   <!-- Landing -->
   <section id="home" class="view">
     <div class="hero">
@@ -839,7 +933,117 @@ const sameDay = (a, b) => iso(a) === iso(b);
 const slotName = k => SLOTS.find(s => s[0] === k)[1];
 const ic = (name, cls = '') => `<i data-lucide="${name}" class="ic ${cls}" aria-hidden="true"></i>`;
 const img = (f, cls = '') => f?.img ? `<img src="${f.img}" alt="" loading="lazy" class="${cls}">` : `<span class="${cls} noimg" style="display:grid;place-items:center;background:var(--soft);color:var(--green)">${ic('utensils')}</span>`;
-const icons = () => window.lucide?.createIcons({ attrs: { 'aria-hidden': 'true' } });
+const icons = () => {
+  window.lucide?.createIcons({ attrs: { 'aria-hidden': 'true' } });
+  $$('img:not(.loaded)').forEach(i => { if (i.complete && i.naturalWidth) i.classList.add('loaded'); }); // cached images skip the shimmer
+};
+for (const t of ['load', 'error']) document.addEventListener(t, e => { if (e.target.tagName === 'IMG') e.target.classList.add('loaded'); }, true);
+const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+const emptyState = (icon, title, body, action = '', sm = false) =>
+  `<div class="empty-state${sm ? ' sm' : ''}"><span class="es-ic">${ic(icon)}</span><h3>${title}</h3><p>${body}</p>${action}</div>`;
+// staggered entrance; 'backwards' fill means nothing lingers after it finishes
+const CASCADE = '.page-head, .welcome, .summary, .stats > *, .dash > div > *, .calendar > .tile, .meals > *, .side > *, .shop-group, .shop-list > li, #shop-total, form.settings > *, .settings > section, .hero > *, .section, .band, .credits tbody tr, #choices > *';
+function cascadeIn(els) {
+  if (reduced()) return;
+  els.forEach((el, i) => { el.classList.remove('cascade'); el.style.setProperty('--i', Math.min(i, 14)); void el.offsetWidth; el.classList.add('cascade'); });
+}
+// ---------- searchable dropdown: enhances a native <select>, which stays the source of truth ----------
+function closeDropdowns(except) { $$('select').forEach(s => { if (s._dd && s._dd.wrap !== except) s._dd.close(); }); }
+document.addEventListener('pointerdown', e => { if (!e.target.closest('.dd')) closeDropdowns(); });
+function enhanceSelect(sel) {
+  if (sel._dd) return sel._dd.refresh();
+  const multi = sel.multiple, id = sel.id + '-dd', wrap = document.createElement('div');
+  wrap.className = 'dd' + (multi ? ' multi' : '');
+  wrap.innerHTML = `<button type="button" class="dd-btn" id="${id}" aria-haspopup="listbox" aria-expanded="false"><span class="dd-val"></span>${ic('chevron-down', 'dd-chev')}</button>
+    <div class="dd-panel" hidden><div class="search-box">${ic('search')}<input class="dd-search" type="search" placeholder="Search…" autocomplete="off"
+      role="combobox" aria-expanded="true" aria-controls="${id}-list"></div>
+    <div class="dd-count muted" aria-live="polite"></div><div class="dd-list" id="${id}-list" role="listbox"${multi ? ' aria-multiselectable="true"' : ''}></div>
+    ${multi ? '<div class="dd-foot"><button type="button" class="btn quiet dd-clear">Clear</button><button type="button" class="btn primary dd-done">Done</button></div>' : ''}</div>`;
+  sel.after(wrap);
+  sel.hidden = true;
+  const btn = wrap.querySelector('.dd-btn'), panel = wrap.querySelector('.dd-panel'), search = wrap.querySelector('.dd-search'), list = wrap.querySelector('.dd-list');
+  const label = sel.labels?.[0];
+  if (label) label.htmlFor = id;
+  const name = (label?.textContent || sel.getAttribute('aria-label') || sel.dataset.label || '').trim();
+  btn.setAttribute('aria-label', name);
+  search.setAttribute('aria-label', 'Search ' + name.toLowerCase());
+  let active = 0;
+  const shown = () => { const q = search.value.trim().toLowerCase(); return [...sel.options].filter(o => o.text.toLowerCase().includes(q)); };
+  function refresh() {
+    const picked = [...sel.selectedOptions];
+    const text = multi ? (picked.length ? picked.map(o => o.text).join(', ') : sel.dataset.placeholder || 'Any') : picked[0]?.text || '';
+    wrap.querySelector('.dd-val').innerHTML = (sel.dataset.label ? `<small>${esc(sel.dataset.label)}</small>` : '') + esc(text);
+    btn.classList.toggle('has-value', multi && picked.length > 0);
+    btn.title = text;
+  }
+  function draw() {
+    const s = shown();
+    active = Math.max(0, Math.min(active, s.length - 1));
+    wrap.querySelector('.dd-count').textContent = `${s.length} of ${sel.options.length}${multi ? ` · ${sel.selectedOptions.length} chosen` : ''}`;
+    list.innerHTML = s.length ? s.map((o, i) => `<div role="option" id="${id}-o${o.index}" data-i="${o.index}" aria-selected="${o.selected}" class="dd-opt${i === active ? ' active' : ''}">${multi ? '<span class="dd-box"></span>' : ''}<span>${esc(o.text)}</span></div>`).join('')
+      : `<div class="dd-empty">No options match "${esc(search.value.trim())}"</div>`;
+    search.setAttribute('aria-activedescendant', s[active] ? `${id}-o${s[active].index}` : '');
+  }
+  function open() {
+    if (!panel.hidden && !panel.classList.contains('leaving')) return;
+    closeDropdowns(wrap);
+    panel.classList.remove('leaving');
+    search.value = '';
+    active = Math.max(0, shown().findIndex(o => o.selected));
+    draw();
+    panel.hidden = false;
+    panel.style.left = panel.style.right = '';
+    if (panel.getBoundingClientRect().right > innerWidth - 8) { panel.style.left = 'auto'; panel.style.right = '0'; } // keep on screen
+    btn.setAttribute('aria-expanded', 'true');
+    search.focus();
+  }
+  function close(focusBtn) {
+    if (panel.hidden || panel.classList.contains('leaving')) return;
+    btn.setAttribute('aria-expanded', 'false');
+    animateOut(panel, 'leaving', () => { panel.hidden = true; });
+    if (focusBtn) btn.focus();
+  }
+  function choose(o) {
+    if (multi) o.selected = !o.selected; else sel.value = o.value;
+    sel.dispatchEvent(new Event('change', { bubbles: true }));
+    refresh();
+    if (multi) draw(); else close(true);
+  }
+  btn.onclick = () => (panel.hidden ? open() : close());
+  btn.onkeydown = e => { if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); open(); } };
+  search.oninput = () => { active = 0; draw(); };
+  search.onkeydown = e => {
+    const s = shown();
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      active = (active + (e.key === 'ArrowDown' ? 1 : -1) + s.length) % Math.max(1, s.length);
+      draw();
+      list.querySelector('.active')?.scrollIntoView({ block: 'nearest' });
+    } else if (e.key === 'Enter') { e.preventDefault(); if (s[active]) choose(s[active]); }
+    else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); close(true); } // close the list, not the meal picker
+    else if (e.key === 'Tab') close();
+  };
+  list.onclick = e => {
+    const el = e.target.closest('[data-i]');
+    if (!el) return;
+    active = shown().findIndex(o => o.index === +el.dataset.i);
+    choose(sel.options[+el.dataset.i]);
+  };
+  wrap.querySelector('.dd-clear')?.addEventListener('click', () => { [...sel.options].forEach(o => { o.selected = false; }); sel.dispatchEvent(new Event('change', { bubbles: true })); refresh(); draw(); });
+  wrap.querySelector('.dd-done')?.addEventListener('click', () => close(true));
+  sel._dd = { refresh, close, wrap };
+  refresh();
+  icons();
+}
+
+// plays a closing animation on el, then runs done (immediately when motion is reduced)
+function animateOut(el, cls, done) {
+  if (reduced()) return done();
+  el.classList.add(cls);
+  const end = e => { if (e.target !== el) return; el.removeEventListener('animationend', end); if (el.classList.contains(cls)) { el.classList.remove(cls); done(); } };
+  el.addEventListener('animationend', end);
+  setTimeout(() => end({ target: el }), 450); // background tabs may never fire animationend
+}
 
 const today = new Date();
 const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
@@ -860,7 +1064,7 @@ let goals = loadGoals();
 useFoods(cleanCustom(load('plate-custom', [])));
 const money = c => goals.currency + (c / 100).toFixed(2);
 let ym = { y: today.getFullYear(), m: today.getMonth() };
-let cur = startOfToday, view = 'home', choosing = null, chooserFilter = 'all', chooserCuisine = 'all';
+let cur = startOfToday, view = 'home', choosing = null;
 
 const plans = {};
 const planKey = (y, m) => `plate-plan-${y}-${pad2(m + 1)}`;
@@ -885,9 +1089,14 @@ function toast(msg, undo) {
   $('#toast-msg').textContent = msg;
   toastUndo = undo;
   $('#toast-undo').hidden = !undo;
+  $('#toast').classList.remove('leaving');
   $('#toast').hidden = !msg;
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => { $('#toast').hidden = true; }, 10000);
+  toastTimer = setTimeout(hideToast, 10000);
+}
+function hideToast() {
+  const t = $('#toast');
+  if (!t.hidden && !t.classList.contains('leaving')) animateOut(t, 'leaving', () => { t.hidden = true; });
 }
 
 // ---------- routing ----------
@@ -908,6 +1117,7 @@ function route() {
   render();
   window.scrollTo(0, 0);
   $(`#${view} h1`)?.focus({ preventScroll: true });
+  cascadeIn($$(`#${view} :is(${CASCADE})`));
 }
 function render() {
   ({ home: renderHome, dash: renderDash, month: renderMonth, day: renderDay, shop: renderShop, settings: renderSettings, credits: renderCredits })[view]?.();
@@ -984,6 +1194,9 @@ function renderDash() {
   $('#kcal-table').innerHTML = `<table><thead><tr><th>Day</th><th>Calories</th><th>Protein</th><th>Sugar</th></tr></thead><tbody>${s.days.filter(d => d.t.kcal).map(({ d, t }) =>
     `<tr><td>${fmt(new Date(y, m, d), { weekday: 'short', day: 'numeric' })}</td><td>${t.kcal.toLocaleString()}</td><td>${t.protein}g</td><td>${t.sugar}g</td></tr>`).join('') || '<tr><td colspan="4">Nothing planned yet.</td></tr>'}</tbody></table>`;
 
+  $('#kcal-chart').classList.toggle('is-empty', !s.planned);
+  $('#kcal-chart').nextElementSibling.hidden = !s.planned; // no table to show either
+  if (!s.planned) $('#kcal-chart').innerHTML = emptyState('flame', 'Nothing to chart yet', "Once you plan some meals, you'll see your calories for each day here.", `<a class="btn primary" href="#month">${ic('sparkles')}Plan my month</a>`);
   // spending by week
   const weeks = [1, 2, 3, 4, 5].map(w => { const ds = s.days.map(x => x.d).filter(d => Math.ceil(d / 7) === w); return { w, ds, cost: shoppingList(s.plan, goals.people, ds).total }; }).filter(w => w.ds.length);
   const wmax = Math.max(1, ...weeks.map(w => w.cost));
@@ -996,7 +1209,8 @@ function renderDash() {
     const ok = kind === 'min' ? v >= g : kind === 'max' ? v <= g : Math.abs(v / g - 1) <= 0.1;
     return `<div><div class="top"><span>${n}</span><span>${v.toLocaleString()}${u} <span class="muted">/ ${g.toLocaleString()}${u}</span></span></div>
       <div class="bar" aria-hidden="true"><i class="${s.planned && !ok ? 'over' : ''}" style="width:${pct(v, g)}%"></i></div></div>`;
-  }).join('') + (s.planned ? '' : '<p class="muted">Plan some meals to see your averages.</p>');
+  }).join('');
+  if (!s.planned) $('#averages').innerHTML = emptyState('heart-pulse', 'No averages yet', 'Plan a few days and your daily averages will show here.', '', true);
 
   // days to look at
   const issues = s.days.filter(x => x.c && (x.c < s.slotsN || !x.r?.good)).slice(0, 6).map(x => {
@@ -1010,7 +1224,7 @@ function renderDash() {
 
   const top = [...s.items].sort((a, b) => b.n - a.n).slice(0, 5);
   $('#top-meals').innerHTML = top.length ? top.map(i => `<li>${img(i.food)}<span class="grow"><b>${esc(i.food.name)}</b><small>${slotName(i.food.slot)}</small></span><span class="count">${i.n / goals.people}×</span></li>`).join('')
-    : '<li class="muted">No meals planned yet.</li>';
+    : `<li class="es-li">${emptyState('trophy', 'Nothing planned yet', 'The meals you plan most often will show up here.', '', true)}</li>`;
 }
 
 // tooltip for the calories chart
@@ -1067,7 +1281,7 @@ function renderDay() {
       <button type="button" class="btn quiet" data-remove="${k}" aria-label="Remove ${label.toLowerCase()}">Remove</button></div></div>`;
   }).join('');
   const t = dayTotals(day), r = dayReport(t, goals);
-  $('#day-report').innerHTML = !r ? '<p class="muted">Choose some meals and we\'ll tell you how the day looks.</p>'
+  $('#day-report').innerHTML = !r ? emptyState('clipboard-list', 'Nothing chosen yet', "Pick a meal and we'll check calories, protein and sugar for you.", '', true)
     : `<ul class="report">${[
       ['flame', 'Calories', `${t.kcal.toLocaleString()} of ${goals.kcal.toLocaleString()}`, r.kcal],
       ['dumbbell', 'Protein', `${t.protein}g of ${goals.protein}g`, r.protein],
@@ -1079,36 +1293,40 @@ function renderDay() {
 const noteKey = d => `plate-notes-${d.getFullYear()}-${pad2(d.getMonth() + 1)}`;
 
 // ---------- chooser ----------
-const FILTERS = [['all', 'All'], ['fav', 'Favourites'], ['protein', 'High protein'], ['sugar', 'Low sugar'], ['light', 'Light'], ['budget', 'Budget'], ['mine', 'My meals']];
+const FILTERS = [['fav', 'Favourites', f => isFav(f.id)], ['protein', 'High protein', f => f.protein >= 25], ['sugar', 'Low sugar', f => f.sugar <= 5],
+  ['light', 'Light', f => f.kcal <= 350], ['budget', 'Budget', f => f.cost <= 150], ['mine', 'My meals', f => f.custom]];
 function openChooser(k) {
   choosing = k;
-  chooserFilter = 'all';
-  chooserCuisine = 'all';
   $('#chooser-title').textContent = `Choose ${slotName(k).toLowerCase()} · ${longDate(cur)}`;
   $('#search').value = '';
-  $('#filters').innerHTML = FILTERS.map(([id, l]) => `<button type="button" class="chip-btn" data-filter="${id}">${l}</button>`).join('')
-    + '<span style="flex-basis:100%"></span>' + [['all', 'All cuisines'], ...CUISINES].map(([c, l]) => `<button type="button" class="chip-btn" data-cuisine="${c}">${l}</button>`).join('')
-    + `<select id="sort" aria-label="Sort meals"><option value="fav">Favourites and loved cuisines first</option><option value="name">Name A–Z</option><option value="kcal">Fewest calories</option><option value="protein">Most protein</option><option value="cost">Cheapest</option></select>`;
+  $('#filters').innerHTML = `<select id="f-tags" multiple aria-label="Filters" data-label="Filters" data-placeholder="All meals">${FILTERS.map(([v, l]) => `<option value="${v}">${l}</option>`).join('')}</select>
+    <select id="f-cuisine" multiple aria-label="Cuisine" data-label="Cuisine" data-placeholder="All cuisines">${CUISINES.map(([v, l]) => `<option value="${v}">${l}</option>`).join('')}</select>`
+    + `<select id="sort" aria-label="Sort meals" data-label="Sort"><option value="fav">Favourites and loved cuisines first</option><option value="name">Name A–Z</option><option value="kcal">Fewest calories</option><option value="protein">Most protein</option><option value="cost">Cheapest</option></select>`;
+  $$('#filters select').forEach(enhanceSelect);
   renderChooser();
   $('#chooser').showModal();
   $('#chooser').scrollTop = 0;
+  cascadeIn($$('#choices > *'));
+}
+function closeChooser() {
+  const d = $('#chooser');
+  if (d.open && !d.classList.contains('closing')) animateOut(d, 'closing', () => d.close());
 }
 function renderChooser() {
   const q = $('#search').value.trim().toLowerCase(), b = blocked(goals);
   const all = ALL.filter(f => f.slot === choosing), ok = all.filter(f => allowed(f, goals, b));
-  const test = { all: () => true, fav: f => isFav(f.id), protein: f => f.protein >= 25, sugar: f => f.sugar <= 5, light: f => f.kcal <= 350, budget: f => f.cost <= 150, mine: f => f.custom }[chooserFilter];
+  const tests = [...$('#f-tags').selectedOptions].map(o => FILTERS.find(x => x[0] === o.value)[2]), cuisines = [...$('#f-cuisine').selectedOptions].map(o => o.value);
   const sort = $('#sort')?.value || 'fav';
   const cmp = { fav: (a, c) => isFav(c.id) - isFav(a.id) || loved(c, goals) - loved(a, goals) || a.name.localeCompare(c.name), name: (a, c) => a.name.localeCompare(c.name), kcal: (a, c) => a.kcal - c.kcal, protein: (a, c) => c.protein - a.protein, cost: (a, c) => a.cost - c.cost }[sort];
-  const shown = ok.filter(f => f.name.toLowerCase().includes(q) && test(f) && (chooserCuisine === 'all' || f.cuisine === chooserCuisine)).sort(cmp);
-  $$('#filters [data-cuisine]').forEach(x => x.setAttribute('aria-pressed', x.dataset.cuisine === chooserCuisine));
-  $$('#filters [data-filter]').forEach(x => x.setAttribute('aria-pressed', x.dataset.filter === chooserFilter));
+  // filters must all match; any ticked cuisine matches
+  const shown = ok.filter(f => f.name.toLowerCase().includes(q) && tests.every(t => t(f)) && (!cuisines.length || cuisines.includes(f.cuisine))).sort(cmp);
   $('#choices').innerHTML = shown.length ? shown.map(f => {
     const badges = [cuisineName(f.cuisine), f.protein >= 25 && 'High protein', f.sugar <= 5 && 'Low sugar', f.kcal <= 350 && 'Light', f.cost <= 150 && 'Budget']
       .filter(Boolean).map(x => `<span class="badge">${x}</span>`).join('');
     return `<div class="choice"><button type="button" class="pick" data-food="${f.id}">${img(f, 'ph')}<span class="name">${esc(f.name)}</span>
       <span class="facts">${f.kcal} cal · ${f.protein}g protein · ${money(f.cost)}</span><span class="badges">${badges}</span></button>
       <button type="button" class="btn fav" data-fav="${f.id}" aria-pressed="${isFav(f.id)}" aria-label="Favourite ${esc(f.name)}">${ic('heart')}</button></div>`;
-  }).join('') : `<p class="muted">No meals match. Try another word or press "All".</p>`;
+  }).join('') : emptyState('search-x', 'No meals match', 'Try a shorter word, or clear the search and filters.', `<button type="button" class="btn" data-reset-filters>${ic('rotate-ccw')}Show all meals</button>`);
   const hidden = all.length - ok.length;
   $('#chooser-note').textContent = hidden ? `${hidden} meal${hidden > 1 ? 's are' : ' is'} hidden because of how you eat or foods you avoid.` : '';
   icons();
@@ -1134,9 +1352,10 @@ function renderShop() {
     return group.length ? `<h2 class="shop-group">${label}</h2><ul class="shop-list">${group.map(i => `<li><label class="check">
       <input type="checkbox" data-food="${i.food.id}"${checked[i.food.id] ? ' checked' : ''}>${img(i.food)}
       <span class="name">${esc(i.food.name)}<span class="qty">${i.n} serving${i.n > 1 ? 's' : ''}</span></span><span class="cost">${money(i.cost)}</span></label></li>`).join('')}</ul>` : '';
-  }).join('') : `<p class="card">Nothing to buy yet. <a href="#month">Plan some meals</a> and your list will appear here.</p>`;
+  }).join('') : emptyState('shopping-basket', 'Your list is empty', 'Plan some meals and everything you need for them appears here, ready to tick off.', `<a class="btn primary" href="#month">${ic('calendar-days')}Plan my meals</a>`);
   const left = items.filter(i => !checked[i.food.id]).length;
   $('#shop-total').hidden = !items.length;
+  enhanceSelect($('#shop-range'));
   $('#shop-total').innerHTML = `Total <b>${money(total)}</b> · ${left ? `${left} item${left > 1 ? 's' : ''} left to get` : 'All done!'}`;
 }
 
@@ -1165,10 +1384,12 @@ function renderSettings() {
   $('#welcome').hidden = !!load('plate-goals', null);
   $('#settings-error').hidden = true;
   $('#c-slot').innerHTML = SLOTS.map(([k, l]) => `<option value="${k}">${l}</option>`).join('');
+  enhanceSelect($('#currency'));
+  enhanceSelect($('#c-slot'));
   $('#c-tags').innerHTML = TAGS.map(t => `<label class="opt"><input type="checkbox" value="${t}">${t === 'meat' ? 'Meat' : ALLERGENS.find(a => a[0] === t)[1]}</label>`).join('');
   const mine = ALL.filter(x => x.custom);
   $('#custom-list').innerHTML = mine.length ? mine.map(x => `<li>${ic('chef-hat')}<span class="grow"><b>${esc(x.name)}</b><br><span class="muted">${slotName(x.slot)} · ${x.kcal} cal · ${x.protein}g protein · ${money(x.cost)}</span></span>
-    <button type="button" class="btn quiet" data-del="${x.id}" aria-label="Delete ${esc(x.name)}">${ic('trash-2')}Delete</button></li>`).join('') : '<li class="muted">You haven\'t added any meals yet.</li>';
+    <button type="button" class="btn quiet" data-del="${x.id}" aria-label="Delete ${esc(x.name)}">${ic('trash-2')}Delete</button></li>`).join('') : `<li class="es-li">${emptyState('chef-hat', 'No meals of your own yet', 'Add a family recipe below and plan it like any other meal.', '', true)}</li>`;
 }
 
 function renderCredits() {
@@ -1240,21 +1461,17 @@ $('#day-note').oninput = e => {
 };
 
 $('#search').oninput = renderChooser;
-$('#filters').onclick = e => {
-  const b = e.target.closest('[data-filter]'), c = e.target.closest('[data-cuisine]');
-  if (b) chooserFilter = b.dataset.filter;
-  if (c) chooserCuisine = c.dataset.cuisine;
-  if (b || c) renderChooser();
-};
 $('#filters').onchange = renderChooser;
-$('#chooser-close').onclick = () => $('#chooser').close();
+$('#chooser-close').onclick = closeChooser;
+$('#chooser').addEventListener('cancel', e => { e.preventDefault(); closeChooser(); }); // Escape key
 $('#chooser').onclose = () => { choosing = null; };
-$('#chooser').onclick = e => { if (e.target === $('#chooser')) $('#chooser').close(); }; // backdrop click
+$('#chooser').onclick = e => { if (e.target === $('#chooser')) closeChooser(); }; // backdrop click
 $('#choices').onclick = e => {
+  if (e.target.closest('[data-reset-filters]')) { $('#search').value = ''; $$('#f-tags option, #f-cuisine option').forEach(o => { o.selected = false; }); $$('#filters select').forEach(enhanceSelect); renderChooser(); cascadeIn($$('#choices > *')); return; }
   const b = e.target.closest('[data-food]');
   if (!b) return;
   const f = byId[b.dataset.food], k = choosing, d = cur.getDate();
-  $('#chooser').close();
+  closeChooser();
   changeMonth(cur.getFullYear(), cur.getMonth(), `${f.name} added for ${slotName(k).toLowerCase()}.`, plan => { (plan[d] ||= {})[k] = f.id; });
   $(`[data-choose="${k}"]`)?.focus();
 };
@@ -1353,12 +1570,26 @@ $('#reset-all').onclick = () => {
   location.reload();
 };
 
-$('#toast-undo').onclick = () => { $('#toast').hidden = true; toastUndo?.(); };
+$('#toast-undo').onclick = () => { const u = toastUndo; hideToast(); u?.(); };
 
 setBig(!!load('plate-big', {}).on);
-window.addEventListener('hashchange', route);
+window.addEventListener('hashchange', () => {
+  if (!document.startViewTransition || reduced()) return route();
+  document.startViewTransition(route).ready.catch(() => {}); // a skipped transition (e.g. rapid clicks) still runs route
+});
 window.addEventListener('load', icons);
 route();
+boot();
+// skeleton stays up only until the icon set and fonts have really arrived (2.5s at most)
+async function boot() {
+  const lucideReady = new Promise(r => window.lucide ? r() : window.addEventListener('load', r, { once: true }));
+  await Promise.race([Promise.all([document.fonts.ready, lucideReady]), new Promise(r => setTimeout(r, 2500))]);
+  document.body.classList.remove('booting');
+  $('main').removeAttribute('aria-busy');
+  render();
+  cascadeIn($$(`#${view} :is(${CASCADE})`));
+  $(`#${view} h1`)?.focus({ preventScroll: true });
+}
 </script>
 </body>
 </html>
