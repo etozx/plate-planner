@@ -1,0 +1,28 @@
+name = "plate-planner-api"
+main = "src/index.js"
+compatibility_date = "2026-10-01"
+
+[ai]
+binding = "AI"
+
+# Filled in by `npx wrangler d1 create plate-planner` (see README)
+[[d1_databases]]
+binding = "DB"
+database_name = "plate-planner"
+database_id = "REPLACE_WITH_DATABASE_ID"
+
+# 6 help messages per visitor per minute
+[[ratelimits]]
+name = "CHAT_LIMIT"
+namespace_id = "2001"
+  [ratelimits.simple]
+  limit = 6
+  period = 60
+
+# 30 sync requests per visitor per minute
+[[ratelimits]]
+name = "SYNC_LIMIT"
+namespace_id = "2002"
+  [ratelimits.simple]
+  limit = 30
+  period = 60
